@@ -1,0 +1,61 @@
+export const buyProperties = [
+  {
+    id: 1,
+    title: "Serenity Condo Suite",
+    price: "INR 12,00,000",
+    image: "/assets/img/buy/buy-grid-img-01.jpg",
+    userImage: "/assets/img/users/user-01.jpg",
+    location: "17, Grove Towers, New York, USA",
+    bedrooms: 4,
+    bathrooms: 4,
+    sqft: 350,
+    listedOn: "16 Jan 2023",
+    category: "Apartment",
+    badge: "New",
+  },
+  {
+    id: 2,
+    title: "Palm Cove Bungalows",
+    price: "INR 37,00,000",
+    image: "/assets/img/buy/buy-grid-img-04.jpg",
+    userImage: "/assets/img/users/user-04.jpg",
+    location: "42, Pine Residency, Miami, USA",
+    bedrooms: 5,
+    bathrooms: 3,
+    sqft: 700,
+    listedOn: "16 Mar 2025",
+    category: "Bungalow",
+  },
+  // ...add the rest
+];
+
+export const rentProperties = [
+  {
+    id: 1,
+    title: "Serenity Condo Suite",
+    price: "INR 21000 / Month",
+    image: "/assets/img/buy/buy-grid-img-01.jpg",
+    userImage: "/assets/img/users/user-01.jpg",
+    location: "17, Grove Towers, New York, USA",
+    bedrooms: 4,
+    bathrooms: 4,
+    sqft: 350,
+    listedOn: "16 Jan 2023",
+    category: "Apartment",
+    badge: "New",
+  },
+  {
+    id: 2,
+    title: "Palm Cove Bungalows",
+    price: "INR 11000 / Month",
+    image: "/assets/img/buy/buy-grid-img-04.jpg",
+    userImage: "/assets/img/users/user-04.jpg",
+    location: "42, Pine Residency, Miami, USA",
+    bedrooms: 5,
+    bathrooms: 3,
+    sqft: 700,
+    listedOn: "16 Mar 2025",
+    category: "Bungalow",
+  },
+  // ...add the rest
+];

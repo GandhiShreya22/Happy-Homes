@@ -1,0 +1,116 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- MODELS ----------
+model Admin {
+  id         Int       @id @default(autoincrement())
+  email      String    @unique
+  password   String
+  last_login DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  properties Property[]
+}
+
+model Property_Category {
+  id         Int        @id @default(autoincrement())
+  name       String     @unique
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+
+  properties Property[]
+}
+
+model Amenity {
+  id         Int                 @id @default(autoincrement())
+  name       String              @unique
+  created_at DateTime            @default(now())
+  updated_at DateTime            @updatedAt
+
+  properties Property_Amenities[]
+}
+
+model Property {
+  id            Int                  @id @default(autoincrement())
+  title         String
+  slug          String               @unique
+  property_catg_id Int?               // optional FK
+  type          String                // Sale or Rent
+  price         Float
+  location      String
+  address       String
+  bedrooms      Int?
+  bathrooms     Int?
+  area_sqft     Float?
+  description   String?
+  images        Property_Image[]
+  amenities     Property_Amenities[]
+  featured      Boolean             @default(false)
+  status        Status              @default(ACTIVE)
+  created_at    DateTime            @default(now())
+  updated_at    DateTime            @updatedAt
+  admin_id       Int?                // optional FK
+
+  admin         Admin?              @relation(fields: [admin_id], references: [id])
+  property_category  Property_Category?       @relation(fields: [property_catg_id], references: [id])
+  leads         Lead[]
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+}
+
+// Many-to-many relation table for Property <-> Amenity
+model Property_Amenities {
+  id          Int      @id @default(autoincrement())
+  property    Property @relation(fields: [property_id], references: [id])
+  property_id  Int
+  amenity     Amenity  @relation(fields: [amenity_id], references: [id])
+  amenity_id   Int
+}
+
+model Property_Image {
+  id         Int      @id @default(autoincrement())
+  property_id Int
+  image_url  String
+  is_primary Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  property   Property @relation(fields: [property_id], references: [id])
+}
+
+model Lead {
+  id          Int      @id @default(autoincrement())
+  property_id Int
+  name        String
+  email       String
+  phone       String
+  message     String?
+  submitted_at DateTime @default(now())
+
+  property    Property @relation(fields: [property_id], references: [id])
+}
+
+model ContactMessage {
+  id          Int      @id @default(autoincrement())
+  name        String
+  phone       String
+  email       String
+  subject     String
+  description String
+  createdAt   DateTime @default(now())
+}

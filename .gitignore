@@ -38,4 +38,14 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# next.js generated types
+
 next-env.d.ts
+
+# Prisma generated client
+/src/generated/prisma
+
+# IDE/editor config (optional)
+/.idea/
+/.vscode/
