@@ -1,7 +1,8 @@
-import { prisma } from "@/lib/prisma"; // Assuming you're using Prisma for database access
+import { prisma } from "@/lib/prisma";
+import { NextRequest } from "next/server";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-  const { id } = params; // Capture the dynamic `id` from the URL
+export async function GET(req: NextRequest, context: any) {
+  const { id } = context.params as { id: string };
 
   try {
     const property = await prisma.property.findUnique({
