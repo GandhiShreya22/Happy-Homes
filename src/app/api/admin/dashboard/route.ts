@@ -6,6 +6,11 @@ export async function GET() {
     // Count total properties
     const totalProperties = await prisma.property.count();
 
+    // Count active properties (assuming `status: "active"`)
+    const activeProperties = await prisma.property.count({
+      where: { status: "ACTIVE" }
+    })
+
     // Count total leads
     const totalLeads = await prisma.lead.count();
 
@@ -25,6 +30,7 @@ export async function GET() {
       message: "Dashboard stats fetched successfully",
       data: {
         totalProperties,
+        activeProperties,
         totalLeads,
         latestLeads
       }

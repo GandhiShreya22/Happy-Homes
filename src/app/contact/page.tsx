@@ -46,8 +46,7 @@ export default function ContactPage() {
                       <span className="material-icons-outlined">mail</span>
                       <div>
                         <h6 className="mb-2">Email Address</h6>
-                        <p className="mb-0">info@happyhomes.example</p>
-                        <p className="mb-0">support@happyhomes.example</p>
+                        <p className="mb-0">support@happyhomess.co.in</p>
                       </div>
                     </div>
                   </div>
@@ -58,8 +57,8 @@ export default function ContactPage() {
                       <span className="material-icons-outlined">call</span>
                       <div>
                         <h6 className="mb-2">Phone Number</h6>
-                        <p className="mb-0">+81649 48103</p>
-                        <p className="mb-0">+78301 71940</p>
+                        <p className="mb-0">+91 9767691101</p>
+                        <p className="mb-0">+91 7779032277</p>
                       </div>
                     </div>
                   </div>
@@ -70,7 +69,7 @@ export default function ContactPage() {
                       <span className="material-icons-outlined">location_on</span>
                       <div>
                         <h6 className="mb-2">Address</h6>
-                        <p className="mb-0">509 Rosewood Drive, San Francisco, California</p>
+                        <p className="mb-0">Silvassa</p>
                       </div>
                     </div>
                   </div>

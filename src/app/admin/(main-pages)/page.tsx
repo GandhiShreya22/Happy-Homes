@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 const recentActivities = [
   { id: 1, action: "New property listed", user: "John Doe", time: "2 hours ago" },
@@ -10,8 +11,16 @@ const recentActivities = [
 ];
 
 export default function AdminDashboard() {
+  const router = useRouter();
+
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  // Ensure client-only code to prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     async function fetchDashboard() {
@@ -32,6 +41,10 @@ export default function AdminDashboard() {
     fetchDashboard();
   }, []);
 
+  if (!mounted) return null; // Hydration-safe
+
+  if (loading) return <div className="p-6 text-gray-500 dark:text-gray-400">Loading dashboard...</div>;
+
   if (!stats) {
     return <div className="p-6 text-red-500">Failed to load dashboard data.</div>;
   }
@@ -39,9 +52,8 @@ export default function AdminDashboard() {
   return (
     <div className="grid grid-cols-12 gap-4 md:gap-6">
       {/* Stats Grid */}
-      <div className="col-span-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <div key={stat.name} className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+      <div className="col-span-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="bg-white shadow-sm rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700 p-6">
             <div className="p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
@@ -53,35 +65,71 @@ export default function AdminDashboard() {
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate dark:text-gray-400">{stat.name}</dt>
+                    <dt className="text-sm font-medium text-gray-500 truncate dark:text-gray-400">Total Properties</dt>
                     <dd className="flex items-baseline">
-                      <div className="text-2xl font-semibold text-gray-900 dark:text-white">{stat.value}</div>
-                      {/* <div className={`ml-2 flex items-baseline text-sm font-semibold ${
-                        stat.changeType === 'positive' ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {stat.change}
-                      </div> */}
+                      <div className="text-2xl font-semibold text-gray-900 dark:text-white">{stats.totalProperties}</div>
                     </dd>
                   </dl>
                 </div>
               </div>
             </div>
           </div>
-        ))}
+          <div className="bg-white shadow-sm rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700 p-6">
+            <div className="p-6">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-indigo-500 rounded-md flex items-center justify-center">
+                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate dark:text-gray-400">Active Properties</dt>
+                    <dd className="flex items-baseline">
+                      <div className="text-2xl font-semibold text-gray-900 dark:text-white">{stats.activeProperties}</div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white shadow-sm rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700 p-6">
+            <div className="p-6">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-indigo-500 rounded-md flex items-center justify-center">
+                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate dark:text-gray-400">Total Leads</dt>
+                    <dd className="flex items-baseline">
+                      <div className="text-2xl font-semibold text-gray-900 dark:text-white">{stats.totalLeads}</div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
       </div>
 
       {/* Latest Leads */}
-      <div className="col-span-12 xl:col-span-7">
+      <div className="col-span-12">
         <div className="bg-white shadow-sm rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
           <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Latest Leads</h3>
           </div>
           <div className="p-6">
             <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-              {stats.latestLeads.length === 0 && (
+              {stats?.latestLeads?.length === 0 && (
                 <li className="py-2 text-gray-500 dark:text-gray-400">No leads found</li>
               )}
-              {stats.latestLeads.map((lead: any) => (
+              {stats?.latestLeads?.map((lead: any) => (
                 <li key={lead.id} className="py-3">
                   <p className="text-sm text-gray-900 dark:text-white">
                     Lead for{" "}
@@ -151,7 +199,10 @@ export default function AdminDashboard() {
           </div>
           <div className="p-6">
             <div className="grid grid-cols-1 gap-4">
-              <button className="relative group bg-white p-4 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 rounded-lg border border-gray-200 hover:border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:hover:border-gray-500">
+              <button
+                className="relative group bg-white p-4 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 rounded-lg border border-gray-200 hover:border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:hover:border-gray-500"
+                onClick={() => router.push("/admin/properties/add")}
+              >
                 <div>
                   <span className="rounded-lg inline-flex p-3 bg-indigo-50 text-indigo-700 ring-4 ring-white dark:bg-indigo-900/20 dark:text-indigo-400 dark:ring-gray-700">
                     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -165,7 +216,10 @@ export default function AdminDashboard() {
                 </div>
               </button>
 
-              <button className="relative group bg-white p-4 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 rounded-lg border border-gray-200 hover:border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:hover:border-gray-500">
+              <button
+                className="relative group bg-white p-4 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 rounded-lg border border-gray-200 hover:border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:hover:border-gray-500"
+                onClick={() => router.push("/admin/users")}
+              >
                 <div>
                   <span className="rounded-lg inline-flex p-3 bg-green-50 text-green-700 ring-4 ring-white dark:bg-green-900/20 dark:text-green-400 dark:ring-gray-700">
                     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -179,7 +233,7 @@ export default function AdminDashboard() {
                 </div>
               </button>
 
-              <button className="relative group bg-white p-4 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 rounded-lg border border-gray-200 hover:border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:hover:border-gray-500">
+              {/* <button className="relative group bg-white p-4 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500 rounded-lg border border-gray-200 hover:border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:hover:border-gray-500">
                 <div>
                   <span className="rounded-lg inline-flex p-3 bg-yellow-50 text-yellow-700 ring-4 ring-white dark:bg-yellow-900/20 dark:text-yellow-400 dark:ring-gray-700">
                     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -191,7 +245,7 @@ export default function AdminDashboard() {
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white">View Reports</h3>
                   <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Generate and view analytics</p>
                 </div>
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
