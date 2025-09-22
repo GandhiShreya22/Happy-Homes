@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import CreatableSelect from "react-select/creatable";
@@ -33,7 +33,7 @@ type PropertyFormValues = {
   images: File[];
 };
 
-export default function AddProperty() {
+function AddProperty() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const propertyId = searchParams.get("id");
@@ -576,5 +576,13 @@ export default function AddProperty() {
         </button>
       </form>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AddProperty />
+    </Suspense>
   );
 }
