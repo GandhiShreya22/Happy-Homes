@@ -1,6 +1,8 @@
 "use client";
 
+import { PencilIcon } from "@/src/assets/icons";
 import PageBreadcrumb from "@/src/components/admin/common/PageBreadCrumb";
+import Button from "@/src/components/button/Button";
 import { defaultErrMsg } from "@/src/utils/constants";
 import { formatAmountToInrCurrency, formatDateToGB } from "@/src/utils/helpers";
 import Link from "next/link";
@@ -15,7 +17,9 @@ type Property = {
   purpose: string;
   price: number;
   created_at: string;
-  property_type: { id: number; name: string };
+  updated_at: string,
+  type: string;
+  property_category: { id: number; name: string }
   admin: { id: number; email: string };
   images: { id: number; image_url: string }[];
 };
@@ -40,7 +44,13 @@ export default function PropertyListing() {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
+  const [mounted, setMounted] = useState(false);
   console.log("properties::", properties)
+
+  // Ensure client-only code to prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchProperties = async (page: number, limit: number) => {
     setLoading(true);
@@ -50,6 +60,7 @@ export default function PropertyListing() {
 
       if (data.success) {
         const resData = data?.data;
+        console.log("resData::", resData)
         setProperties(resData.properties);
         setTotalRows(resData.pagination.total);
       } else {
@@ -73,21 +84,17 @@ export default function PropertyListing() {
       selector: (row) => row.title,
       sortable: true,
       cell: (row) => (
-        <div className="flex items-center gap-2">
-          {row.images[0] && (
-            <img
-              src={row.images[0].image_url}
-              alt={row.title}
-              className="w-10 h-10 object-cover rounded"
-            />
-          )}
-          <span>{row.title}</span>
-        </div>
+        <div>{row.title}</div>
       ),
     },
     {
       name: "Type",
-      selector: (row) => row.property_type.name,
+      selector: (row) => row.type,
+      sortable: true,
+    },
+    {
+      name: "Category",
+      selector: (row) => row.property_category?.name || "",
       sortable: true,
     },
     {
@@ -116,11 +123,6 @@ export default function PropertyListing() {
       ),
     },
     {
-      name: "Purpose",
-      selector: (row) => row.purpose,
-      sortable: true,
-    },
-    {
       name: "Created At",
       selector: (row) => row.created_at,
       sortable: true,
@@ -130,21 +132,38 @@ export default function PropertyListing() {
         </span>
       ),
     },
-    // {
-    //   name: "Actions",
-    //   cell: (row) => (
-    //     <div className="space-x-2">
-    //       <Link
-    //         href={`/admin/properties/add?id=${row.id}`}
-    //         className="text-indigo-600 hover:underline"
-    //       >
-    //         Edit
-    //       </Link>
-    //       <button className="text-red-600 hover:underline">Delete</button>
-    //     </div>
-    //   ),
-    // },
+    {
+      name: "Updated At",
+      selector: (row) => row.updated_at,
+      sortable: true,
+      cell: (row) => (
+        <span suppressHydrationWarning>
+          {row.updated_at ? formatDateToGB(row.updated_at) : ""}
+        </span>
+      ),
+    },
+    {
+      name: "Actions",
+      cell: (row) => (
+        <div className="space-x-2">
+          <Link
+            href={`/admin/properties/add?id=${row.id}`}
+            className="text-indigo-600 hover:underline"
+          >
+            Edit
+          </Link>
+          <Button variant="outline" className="px-3 py-2" size="sm"
+          // startIcon={<PencilIcon />}
+          >
+            <PencilIcon />
+          </Button>
+          <button className="text-red-600 hover:underline">Delete</button>
+        </div>
+      ),
+    },
   ];
+
+  if (!mounted) return null; // Hydration-safe
 
   return (
     <div>

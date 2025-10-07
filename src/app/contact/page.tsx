@@ -15,7 +15,7 @@ export default function ContactPage() {
                 <div className="card-body p-4">
                   <h4 className="mb-2">Talk to Member of Sales Team</h4>
                   <p className="mb-3">Connect with our experienced real estate experts for personalized guidance, property insights, and assistance with buying, selling, or renting your dream property.</p>
-                  <p className="fw-semibold mb-0">Toll Free : 888 634-5891</p>
+                  {/* <p className="fw-semibold mb-0">Toll Free : 888 634-5891</p> */}
                 </div>
               </div>
               <div className="card border-0 mb-0">
@@ -69,7 +69,7 @@ export default function ContactPage() {
                       <span className="material-icons-outlined">location_on</span>
                       <div>
                         <h6 className="mb-2">Address</h6>
-                        <p className="mb-0">Silvassa</p>
+                        <p className="mb-0">Shop No.01 Sahaj-Shikhar Building, Kasturi Floridus, Naroli Road, Silvasaa -396230</p>
                       </div>
                     </div>
                   </div>
@@ -94,7 +94,7 @@ export default function ContactPage() {
       </div>
 
       <div className="google-map">
-        <iframe className="rounded-0" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2967.8862835683544!2d-73.98256668525309!3d41.93829486962529!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89dd0ee3286615b7%3A0x42bfa96cc2ce4381!2s132%20Kingston%20St%2C%20Kingston%2C%20NY%2012401%2C%20USA!5e0!3m2!1sen!2sin!4v1670922579281!5m2!1sen!2sin" allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3742.696687635652!2d72.99216287500995!3d20.271410281195028!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be0cbfd7ac375d5%3A0x72f9d67aba580439!2sKasturi%20Floridus!5e0!3m2!1sen!2sin!4v1759068442408!5m2!1sen!2sin" allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
       </div>
     </div>
   );
