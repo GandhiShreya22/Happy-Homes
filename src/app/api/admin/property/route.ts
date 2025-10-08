@@ -73,6 +73,7 @@ export const POST = async (req: Request) => {
     const status = getField<string>(fields.status);
     const admin_id = getField<string>(fields.admin_id);
     const amenities = fields.amenities;
+    const keyword = getField<string>(fields.keyword);
 
     // Validation
     if (!title || !price || !location || !address) {
@@ -94,6 +95,7 @@ export const POST = async (req: Request) => {
           title,
           slug,
           property_catg_id: property_catg_id ? Number(property_catg_id) : null,
+          keyword_id: keyword ? Number(keyword) : null,
           type,
           price: Number(price),
           location,

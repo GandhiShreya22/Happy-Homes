@@ -58,7 +58,7 @@ export default function BuyPropertyPage() {
       if (data.success) {
         const propertyData = data?.data?.properties || [];
         if (propertyData && propertyData.length > 0) {
-          setProperties((prev) => [...prev, ...propertyData]);
+          setProperties((prev: any) => [...prev, ...propertyData]);
           // If the number of properties returned is less than the limit, there are no more properties to load
           if (propertyData.length < limit) {
             setHasMore(false); // No more properties available
@@ -103,7 +103,7 @@ export default function BuyPropertyPage() {
             <div className="col-lg-8">
               <div className="row mb-4">
                 {properties?.length ? (
-                  properties?.map((property) => (
+                  properties?.map((property: any) => (
                     <PropertyCard key={property.id} property={property} link="/property-details" />
                   ))
                 ) : (

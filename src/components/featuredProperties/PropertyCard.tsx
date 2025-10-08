@@ -1,17 +1,29 @@
 import { Property } from "@/src/data/featuredProperties.js";
+import { formatAmountToInrCurrency, formatDateToGB } from "@/src/utils/helpers";
+import Image from "next/image";
+import Link from "next/link";
 
 interface Props {
   property: Property;
+  link: string,
 }
 
-export default function PropertyCard({ property }: Props) {
+export default function PropertyCard({ property, link = "/property-details" }: Props) {
+  const detailPageLink = `${link}/${property.id}`;
+
   return (
     <div className="property-card flex-fill mb-0">
       <div className="property-listing-item p-0 mb-0 shadow-none">
         <div className="buy-grid-img mb-0 rounded-0 position-relative">
-          <a href={property.link}>
-            <img className="img-fluid" src={property.image} alt={property.title} />
-          </a>
+          <Link href={detailPageLink}>
+            <Image
+              className="img-fluid"
+              src={property?.images?.length ? property.images[0]?.image_url : "/assets/img/property/default-property.jpg"}
+              alt={property.title}
+              width={415}
+              height={250}
+            />
+          </Link>
 
           {property.badge && (
             <div className="position-absolute top-0 start-0 m-3 z-1">
@@ -19,11 +31,8 @@ export default function PropertyCard({ property }: Props) {
             </div>
           )}
 
-          <div className="d-flex align-items-center justify-content-between position-absolute bottom-0 end-0 start-0 p-3 z-1">
-            <h6 className="text-white mb-0">{property.price}</h6>
-            <div className="user-avatar avatar avatar-md border rounded-circle">
-              <img src={property.userImage} alt="User" className="rounded-circle" />
-            </div>
+          <div className="d-flex align-items-center justify-content-end position-absolute bottom-0 end-0 start-0 p-3 z-1">
+            <h6 className="text-white mb-0">{formatAmountToInrCurrency(property.price)}</h6>
           </div>
         </div>
 
@@ -31,7 +40,7 @@ export default function PropertyCard({ property }: Props) {
           <div className="d-flex align-items-center justify-content-between mb-3">
             <div>
               <h6 className="title mb-1">
-                <a href={property.link}>{property.title}</a>
+                <a href={property.link} className="cursor-pointer">{property.title}</a>
               </h6>
               <p className="d-flex align-items-center fs-14 mb-0">
                 <i className="material-icons-outlined me-1 ms-0">location_on</i>
@@ -47,20 +56,20 @@ export default function PropertyCard({ property }: Props) {
             </li>
             <li className="d-flex align-items-center gap-1">
               <i className="material-icons-outlined bg-white text-secondary">bathtub</i>
-              {property.baths} Bath
+              {property.bathrooms} Bath
             </li>
             <li className="d-flex align-items-center gap-1">
               <i className="material-icons-outlined bg-white text-secondary">straighten</i>
-              {property.size} Sq Ft
+              {property.area_sqft} Sq Ft
             </li>
           </ul>
 
           <div className="d-flex align-items-center justify-content-between flex-wrap gap-1">
             <p className="fs-14 fw-medium text-dark mb-0">
-              Listed on : <span className="fw-medium text-body"> {property.listedOn}</span>
+              Listed on : <span className="fw-medium text-body"> {formatDateToGB(property.created_at)}</span>
             </p>
             <p className="fs-14 fw-medium text-dark mb-0">
-              Category : <span className="fw-medium text-body"> {property.category}</span>
+              Category : <span className="fw-medium text-body"> {property.property_category?.name}</span>
             </p>
           </div>
         </div>

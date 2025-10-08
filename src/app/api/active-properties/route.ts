@@ -14,6 +14,7 @@ export async function GET(req: Request) {
     const minSqft = url.searchParams.get("minSqft");
     const minPrice = url.searchParams.get("minPrice");
     const maxPrice = url.searchParams.get("maxPrice");
+    const featured = url.searchParams.get("featured");
 
     const page = Number(url.searchParams.get("page") || "1");
     const limit = Number(url.searchParams.get("limit") || "10");
@@ -21,7 +22,7 @@ export async function GET(req: Request) {
     const where: any = { status: "ACTIVE" }; // only active properties
 
     if (property_type) where.type = property_type;
-
+    if (featured !== null) where.featured = featured === "true";
     if (search) {
       where.OR = [
         { title: { contains: search, mode: "insensitive" } },
@@ -77,9 +78,9 @@ export async function GET(req: Request) {
 
     // Filter by amenities (all given IDs)
     if (amenitiesParam) {
-      const amenityIds = JSON.parse(amenitiesParam);
-      properties = properties.filter((property) => {
-        const propertyAmenityIds = property.amenities.map((a) => a.amenity_id);
+      const amenityIds: number[] = JSON.parse(amenitiesParam);
+      properties = properties.filter((property: { amenities: { amenity_id: number }[] }) => {
+        const propertyAmenityIds: number[] = property.amenities.map((a: { amenity_id: number }) => a.amenity_id);
         return amenityIds.every((id: number) => propertyAmenityIds.includes(id));
       });
     }

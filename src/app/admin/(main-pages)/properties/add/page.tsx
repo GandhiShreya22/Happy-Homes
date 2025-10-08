@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import Select from "react-select";
 import CreatableSelect from "react-select/creatable";
 import ComponentCard from "@/src/components/admin/common/ComponentCard";
 import PageBreadcrumb from "@/src/components/admin/common/PageBreadCrumb";
@@ -31,6 +32,7 @@ type PropertyFormValues = {
   status: string;
   amenities: number[];
   images: File[];
+  keyword: number;
 };
 
 function AddProperty() {
@@ -50,12 +52,14 @@ function AddProperty() {
       featured: false,
       status: "ACTIVE",
       amenities: [],
-      slug: ""
+      slug: "",
+      keyword: 0
     },
   });
 
   const [categories, setCategories] = useState<{ value: number; label: string }[]>([]);
   const [amenities, setAmenities] = useState<{ value: number; label: string }[]>([]);
+  const [keywords, setKeywords] = useState<{ value: number; label: string }[]>([]);
 
   const titleValue = watch("title"); // watch the title field
 
@@ -63,22 +67,34 @@ function AddProperty() {
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const [catRes, amenRes] = await Promise.all([
+        const [catRes, amenRes, keywRes] = await Promise.all([
           fetch("/api/categories"),
           fetch("/api/amenities"),
+          fetch("/api/keywords"),
         ]);
 
         const cats = await catRes.json();
         const amens = await amenRes.json();
+        const keyw = await keywRes.json();
 
         if (cats.success) {
           setCategories(cats.data.map((c: any) => ({ value: c.id, label: c.name })));
+        } else {
+          toast.error(cats.message);
         }
         if (amens.success) {
           setAmenities(amens.data.map((a: any) => ({ value: a.id, label: a.name })));
+        } else {
+          toast.error(amens.message);
+        }
+        if (keyw.success) {
+          setKeywords(keyw.data.map((k: any) => ({ value: k.id, label: k.name })))
+        } else {
+          toast.error(keyw.message);
         }
       } catch (err) {
         console.error("Error fetching options:", err);
+        toast.error(defaultErrMsg);
       }
     };
     fetchOptions();
@@ -169,7 +185,7 @@ function AddProperty() {
       Object.entries(data).forEach(([key, value]) => {
         if (key === "images" && Array.isArray(value)) {
           value.forEach((file) => {
-            formData.append("images", file); // Append file object to FormData
+            formData.append("images", file as File); // Append file object to FormData
           });
         } else if (Array.isArray(value)) {
           formData.append(key, JSON.stringify(value));
@@ -255,15 +271,39 @@ function AddProperty() {
               )}
             </div>
 
+            {/* Property Type */}
+            <div>
+              <Label>
+                Purpose <span className="text-red-500">*</span>
+              </Label>
+              <Controller
+                name="type"
+                control={control}
+                rules={{ required: "Purpose is required" }}
+                render={({ field }) => (
+                  <Select
+                    options={propertyTypes}
+                    value={propertyTypes.find((opt) => opt.value === field.value) || null}
+                    onChange={(option) => field.onChange(option?.value || "")}
+                    classNamePrefix="custom-select"
+                    placeholder="Select Purpose..."
+                  />
+                )}
+              />
+              {errors.type && (
+                <p className="text-red-500 text-xs">{errors.type.message}</p>
+              )}
+            </div>
+
             {/* Property Category */}
             <div>
               <Label>
-                Property Category <span className="text-red-500">*</span>
+                Property Type <span className="text-red-500">*</span>
               </Label>
               <Controller
                 name="property_catg_id"
                 control={control}
-                rules={{ required: "Property category is required" }}
+                rules={{ required: "Property type is required" }}
                 render={({ field }) => (
                   <CreatableSelect
                     {...field}
@@ -276,6 +316,7 @@ function AddProperty() {
                       if (newOption) field.onChange(newOption.value);
                     }}
                     classNamePrefix="custom-select"
+                    placeholder="Select or create a property type..."
                   />
                 )}
               />
@@ -283,28 +324,6 @@ function AddProperty() {
                 <p className="text-red-500 text-xs">
                   {errors.property_catg_id.message}
                 </p>
-              )}
-            </div>
-
-            {/* Property Type */}
-            <div>
-              <Label>
-                Property Type <span className="text-red-500">*</span>
-              </Label>
-              <Controller
-                name="type"
-                control={control}
-                render={({ field }) => (
-                  <CreatableSelect
-                    {...field}
-                    options={propertyTypes}
-                    onChange={(option) => field.onChange(option?.value)}
-                    classNamePrefix="custom-select"
-                  />
-                )}
-              />
-              {errors.type && (
-                <p className="text-red-500 text-xs">{errors.type.message}</p>
               )}
             </div>
 
@@ -324,7 +343,7 @@ function AddProperty() {
                   <Input
                     type="number"
                     {...field}
-                    min={0}
+                    min="0"
                     step={0.01}
                     placeholder="Enter price of the property"
                   />
@@ -389,7 +408,7 @@ function AddProperty() {
                 name="bedrooms"
                 control={control}
                 rules={{
-                  required: "Bedrooms are required",
+                  // required: "Bedrooms are required",
                   min: { value: 0, message: "Min 0" },
                 }}
                 render={({ field }) => (
@@ -397,7 +416,7 @@ function AddProperty() {
                     type="number"
                     {...field}
                     placeholder="Enter number of available bedrooms"
-                    min={0}
+                    min="0"
                   />
                 )}
               />
@@ -413,7 +432,7 @@ function AddProperty() {
                 name="bathrooms"
                 control={control}
                 rules={{
-                  required: "Bathrooms are required",
+                  // required: "Bathrooms are required",
                   min: { value: 0, message: "Min 0" },
                 }}
                 render={({ field }) => (
@@ -421,7 +440,7 @@ function AddProperty() {
                     type="number"
                     {...field}
                     placeholder="Enter number of bathrooms"
-                    min={0}
+                    min="0"
                   />
                 )}
               />
@@ -437,7 +456,7 @@ function AddProperty() {
                 name="area_sqft"
                 control={control}
                 rules={{
-                  required: "Area is required",
+                  // required: "Area is required",
                   min: { value: 0, message: "Min 0" },
                 }}
                 render={({ field }) => (
@@ -472,9 +491,38 @@ function AddProperty() {
             />
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Property Keyword */}
+            <div>
+              <Label>
+                Keyword
+              </Label>
+              <Controller
+                name="keyword"
+                control={control}
+                // rules={{ required: "Property keyword is required" }}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    isClearable
+                    options={keywords}
+                    value={keywords.find((opt) => opt.value == field.value) || null}
+                    onChange={(val) => field.onChange(val ? val.value : null)}
+                    classNamePrefix="custom-select"
+                    placeholder="Select Keyword..."
+                  />
+                )}
+              />
+              {errors.keyword && (
+                <p className="text-red-500 text-xs">
+                  {errors.keyword.message}
+                </p>
+              )}
+            </div>
+
           {/* Amenities */}
           <div>
-            <Label>Amenities</Label>
+            <Label>Amenities <span className="text-red-500">*</span></Label>
             <Controller
               name="amenities"
               control={control}
@@ -501,12 +549,14 @@ function AddProperty() {
                       ]);
                     }
                   }}
+                  placeholder="Select or create a amenities..."
                 />
               )}
             />
             {errors.amenities && (
               <p className="text-red-500 text-xs">{errors.amenities.message}</p>
             )}
+          </div>
           </div>
 
           {/* Images */}

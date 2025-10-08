@@ -6,6 +6,7 @@ import Button from "@/src/components/button/Button";
 import { defaultErrMsg } from "@/src/utils/constants";
 import { formatAmountToInrCurrency, formatDateToGB } from "@/src/utils/helpers";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import DataTable, { TableColumn } from "react-data-table-component";
 import toast from "react-hot-toast";
@@ -39,13 +40,14 @@ type ApiResponse = {
 };
 
 export default function PropertyListing() {
+  const router = useRouter();
+
   const [properties, setProperties] = useState<Property[]>([]);
   const [totalRows, setTotalRows] = useState(0);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [mounted, setMounted] = useState(false);
-  console.log("properties::", properties)
 
   // Ensure client-only code to prevent hydration mismatch
   useEffect(() => {
@@ -148,16 +150,16 @@ export default function PropertyListing() {
         <div className="space-x-2">
           <Link
             href={`/admin/properties/add?id=${row.id}`}
-            className="text-indigo-600 hover:underline"
+            className="text-warning-600 hover:underline"
           >
             Edit
           </Link>
-          <Button variant="outline" className="px-3 py-2" size="sm"
-          // startIcon={<PencilIcon />}
+          {/* <Button variant="outline" className="" size="sm"
+          onClick={() => router.push(`/admin/properties/add?id=${row.id}`)}
           >
             <PencilIcon />
-          </Button>
-          <button className="text-red-600 hover:underline">Delete</button>
+          </Button> */}
+          {/* <button className="text-red-600 hover:underline">Delete</button> */}
         </div>
       ),
     },
@@ -169,6 +171,10 @@ export default function PropertyListing() {
     <div>
       <PageBreadcrumb pageTitle="Properties List" />
       <div className="bg-white shadow rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700 p-4">
+        <div className="text-end mb-3">
+          <Button size="sm" onClick={() => router.push("/admin/properties/add")}>Add Property</Button>
+        </div>
+
         <DataTable
           columns={columns}
           data={properties || []}

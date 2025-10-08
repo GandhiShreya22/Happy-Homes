@@ -26,7 +26,7 @@ export default function PropertyCard({ property, link = "/property-details" }: {
   const detailPageLink = `${link}/${property.id}`;
 
   return (
-    <div className="col-lg-6 col-md-6 d-flex">
+    <div className="col-12 d-flex">
       <div className="property-card flex-fill">
         <div className="property-listing-item p-0 mb-0 shadow-none">
           <div className="buy-grid-img mb-0 rounded-0">

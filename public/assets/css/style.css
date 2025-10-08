@@ -2260,6 +2260,9 @@ button:focus {
 .btn i {
   font-size: 13px;
 }
+.custom-search-item .btn i {
+  font-size: 16px;
+}
 
 .btn-outline-primary {
   color: var(--primary);

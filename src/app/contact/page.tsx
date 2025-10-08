@@ -15,7 +15,7 @@ export default function ContactPage() {
                 <div className="card-body p-4">
                   <h4 className="mb-2">Talk to Member of Sales Team</h4>
                   <p className="mb-3">Connect with our experienced real estate experts for personalized guidance, property insights, and assistance with buying, selling, or renting your dream property.</p>
-                  {/* <p className="fw-semibold mb-0">Toll Free : 888 634-5891</p> */}
+                  <p className="fw-semibold mb-0">Toll Free : +91-9767691101</p>
                 </div>
               </div>
               <div className="card border-0 mb-0">
@@ -46,7 +46,8 @@ export default function ContactPage() {
                       <span className="material-icons-outlined">mail</span>
                       <div>
                         <h6 className="mb-2">Email Address</h6>
-                        <p className="mb-0">support@happyhomess.co.in</p>
+                        <p className="mb-0">support@happyhomes.com</p>
+                        <p className="mb-0">happyhomes1028@gmail.com</p>
                       </div>
                     </div>
                   </div>
@@ -69,7 +70,7 @@ export default function ContactPage() {
                       <span className="material-icons-outlined">location_on</span>
                       <div>
                         <h6 className="mb-2">Address</h6>
-                        <p className="mb-0">Shop No.01 Sahaj-Shikhar Building, Kasturi Floridus, Naroli Road, Silvasaa -396230</p>
+                        <p className="mb-0">Shop No.01 Sahaj-Shikhar Building, Kasturi Floridus, Naroli Road, Silvasaa - 396230</p>
                       </div>
                     </div>
                   </div>

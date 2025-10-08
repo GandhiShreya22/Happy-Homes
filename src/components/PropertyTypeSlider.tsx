@@ -2,8 +2,27 @@
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { defaultErrMsg } from "../utils/constants";
+import { PropertyCategory } from "../data/featuredProperties";
+
+const imgArr = [
+	"/assets/img/home/home.png",
+	"/assets/img/home/residential.png",
+	"/assets/img/home/workplace.png",
+	"/assets/img/home/apartment.png",
+	"/assets/img/home/farmhouse.png",
+];
+
+// Function to get image for category index (cycles through available images)
+const getImageForCategory = (index: number) => {
+	return imgArr[index % imgArr.length];
+};
 
 export default function PropertyTypeSlider() {
+	const [categories, setCategories] = useState<PropertyCategory[]>([]);
+
 	const settings = {
 		dots: false,
 		arrows: true,
@@ -18,53 +37,42 @@ export default function PropertyTypeSlider() {
 		],
 	};
 
+	const fetchCategories = async () => {
+		try {
+			const res = await fetch("/api/categories");
+			const data = await res.json();
+			if (data.success) {
+				setCategories(data.data);
+			} else {
+				toast.error(data.message);
+			}
+		} catch (error) {
+			toast.error(defaultErrMsg)
+		}
+	}
+
+	useEffect(() => {
+		fetchCategories();
+	}, []);
+
 	return (
 		<Slider {...settings} className="property-slider">
-			<div className="property-item aos" data-aos="fade-up" data-aos-duration="1000">
-				<div className="property-card-item">
-					<div className="mb-3 text-center">
-						<img src="/assets/img/home/home.png" alt="property-icon-1" className="m-auto" />
+			{categories?.map((catg, i) => (
+				<div
+					key={catg.id}
+					className="property-item aos"
+					data-aos="fade-up"
+					data-aos-duration="1000"
+				>
+					<div className="property-card-item mx-2">
+						<div className="mb-3 text-center">
+							<img src={getImageForCategory(i)} alt={`property-icon-${i + 1}`} className="m-auto" />
+						</div>
+						<h5 className="mb-1"> {catg.name} </h5>
+						{/* <p className="mb-0"> 30 Properties</p> */}
 					</div>
-					<h5 className="mb-1"> Houses </h5>
-					<p className="mb-0"> 30 Properties</p>
 				</div>
-			</div>
-			<div className="property-item">
-				<div className="property-card-item aos" data-aos="fade-down" data-aos-duration="1000">
-					<div className="mb-3 text-center">
-						<img src="/assets/img/home/workplace.png" alt="property-icon-1" className="m-auto" />
-					</div>
-					<h5 className="mb-1"> Offices </h5>
-					<p className="mb-0"> 45 Properties</p>
-				</div>
-			</div>
-			<div className="property-item aos" data-aos="fade-up" data-aos-duration="1000">
-				<div className="property-card-item">
-					<div className="mb-3 text-center">
-						<img src="/assets/img/home/residential.png" alt="property-icon-1" className="m-auto" />
-					</div>
-					<h5 className="mb-1"> Villas </h5>
-					<p className="mb-0"> 28 Properties</p>
-				</div>
-			</div>
-			<div className="property-item aos" data-aos="fade-down" data-aos-duration="1000">
-				<div className="property-card-item">
-					<div className="mb-3 text-center">
-						<img src="/assets/img/home/apartment.png" alt="property-icon-1" className="m-auto" />
-					</div>
-					<h5 className="mb-1"> Apartment </h5>
-					<p className="mb-0"> 35 Properties</p>
-				</div>
-			</div>
-			<div className="property-item aos" data-aos="fade-up" data-aos-duration="1000">
-				<div className="property-card-item">
-					<div className="mb-3 text-center">
-						<img src="/assets/img/home/farmhouse.png" alt="property-icon-1" className="m-auto" />
-					</div>
-					<h5 className="mb-1"> Farmhouses </h5>
-					<p className="mb-0"> 15 Properties</p>
-				</div>
-			</div>
+			))}
 		</Slider>
 	);
 }

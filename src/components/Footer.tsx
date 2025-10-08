@@ -9,7 +9,7 @@ export default function Footer() {
 								<h5>About Us </h5>
 								<p>Happy Homes is your trusted property partner, making it easy to buy, sell, and rent properties across India’s top cities. With thousands of verified listings and seamless inquiry support, we connect you to the right place you can truly call home.</p>
 								<div className="social-links">
-									<h5>Connect with us</h5>
+									<h5 className="mb-2">Connect with us</h5>
 									<div className="social-icon">
 										<a href="#"><i className="fa-brands fa-facebook"></i></a>
 										<a href="#"><i className="fa-brands fa-x-twitter"></i></a>

@@ -43,11 +43,21 @@ model Amenity {
   properties Property_Amenities[]
 }
 
+model Keyword {
+  id         Int        @id @default(autoincrement())
+  name       String     @unique
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+
+  properties Property[]
+}
+
 model Property {
   id            Int                  @id @default(autoincrement())
   title         String
   slug          String               @unique
   property_catg_id Int?               // optional FK
+  keyword_id    Int?                 // optional FK to Keyword
   type          String                // Sale or Rent
   price         Float
   location      String
@@ -66,6 +76,7 @@ model Property {
 
   admin         Admin?              @relation(fields: [admin_id], references: [id])
   property_category  Property_Category?       @relation(fields: [property_catg_id], references: [id])
+  keyword       Keyword?            @relation(fields: [keyword_id], references: [id])
   leads         Lead[]
 }
 

@@ -21,6 +21,35 @@ async function main() {
   });
   console.log("Admin user seeded");
 
+  // Seed Keywords
+  const keywordNames = ["Furnished", "Unfurnished", "Semi furnished"];
+  for (const name of keywordNames) {
+    await prisma.keyword.upsert({
+      where: { name },
+      update: {},
+      create: { name },
+    });
+  }
+  console.log("Keywords seeded");
+
+  // Seed Property Categories
+  const categoryNames = [
+    "1BHK",
+    "2BHK",
+    "3BHK",
+    "4BHK",
+    "Villa",
+    "Banglow",
+  ];
+  for (const name of categoryNames) {
+    await prisma.property_Category.upsert({
+      where: { name },
+      update: {},
+      create: { name },
+    });
+  }
+  console.log("Property categories seeded");
+
   console.log("Seeding complete!");
 }
 

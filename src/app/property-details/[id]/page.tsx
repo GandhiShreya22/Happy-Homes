@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { defaultErrMsg } from "@/src/utils/constants";
 import { formatAmountToInrCurrency, formatDateToGB } from "@/src/utils/helpers";
+import { Property } from "@/src/data/featuredProperties";
 
 type FormValues = {
   name: string;
@@ -14,13 +15,6 @@ type FormValues = {
   phone: string;
   message?: string;
 };
-
-interface Property {
-  id: number;
-  title: string;
-  description: string;
-  price: number;
-}
 
 export default function PropertyDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -145,11 +139,11 @@ export default function PropertyDetailsPage({ params }: { params: Promise<{ id: 
                     <i className="material-icons-outlined text-white me-1">location_on</i>{location}
                     {/* {" "}<a href="#" target="_blank" className="text-primary fs-14 text-decoration-underline ms-1"> View Location</a> */}
                   </div>
-                  <p className="fs-14 mb-0 text-white">Posted on : {formatDateToGB(created_at)}</p>
+                  <p className="fs-14 mb-0 text-white">Posted on : {formatDateToGB(created_at || "")}</p>
                 </div>
               </div>
               <div className="col-xl-4 d-flex d-xl-block align-items-center flex-wrap gap-3">
-                <h4 className="mb-0 text-primary text-xl-end text-start"> {formatAmountToInrCurrency(price)} </h4>
+                <h4 className="mb-0 text-primary text-xl-end text-start"> {formatAmountToInrCurrency(price || 0)} </h4>
               </div>
             </div>
           </div>
@@ -177,22 +171,34 @@ export default function PropertyDetailsPage({ params }: { params: Promise<{ id: 
               {/* Slider */}
               <div className="slider-card service-slider-card mb-4">
                 <div className="slide-part mb-4">
-                  <Slider {...mainSliderSettings}>
-                    {images.map((img, n) => (
-                      <div key={`img${n}`} className="service-img-wrap">
-                        <Image
-                          src={img}
-                          alt="Slider Img"
-                          className="img-fluid"
-                          width={800}
-                          height={500}
-                        />
-                      </div>
-                    ))}
-                  </Slider>
+                  {images?.length > 0 ? (
+                    <Slider {...mainSliderSettings}>
+                      {images?.map((img, n) => (
+                        <div key={`img${n}`} className="service-img-wrap">
+                          <Image
+                            src={img}
+                            alt="Slider Img"
+                            className="img-fluid"
+                            width={800}
+                            height={500}
+                          />
+                        </div>
+                      ))}
+                    </Slider>
+                  ) : (
+                    <div key="img" className="service-img-wrap">
+                      <Image
+                        src="/assets/img/property/default-property.jpg"
+                        alt="Thumb Img"
+                        className="img-fluid"
+                        width={200}
+                        height={120}
+                      />
+                    </div>
+                  )}
                 </div>
                 <Slider {...thumbSliderSettings}>
-                  {images.map((img, n) => (
+                  {images?.map((img, n) => (
                     <div key={`img-slide${n}`} className="slide-img">
                       <Image
                         src={img}
@@ -230,7 +236,6 @@ export default function PropertyDetailsPage({ params }: { params: Promise<{ id: 
                 )}
 
                 {/* Features */}
-                {propertyData?.features && (
                   <div className="accordion-item">
                     <div
                       className="accordion-header cursor-pointer"
@@ -243,40 +248,20 @@ export default function PropertyDetailsPage({ params }: { params: Promise<{ id: 
                     {openAccordion === "features" && (
                       <div className="accordion-collapse show">
                         <div className="accordion-body">
-                          {/* <ul>
-                            <li>3 Bedrooms</li>
-                            <li>2 Bathrooms</li>
-                            <li>Swimming Pool</li>
-                            <li>Garden Area</li>
-                            <li>Parking Space</li>
-                          </ul> */}
                           <div className="row row-gap-4">
                             <div className="col-lg-3 col-md-6">
                               <div className="buy-property-items">
-                                <p> <i className="material-icons-outlined">bed</i>  Bedrooms: 3</p>
-                                <p> <i className="material-icons-outlined">door_sliding</i> Floor: 5th of 12 </p>
-                                <p> <i className="material-icons-outlined">microwave</i>  Microwave : 2  </p>
+                                <p> <i className="material-icons-outlined">bed</i>  Bedrooms: {bedrooms || "-"}</p>
                               </div>
                             </div>
                             <div className="col-lg-3 col-md-6">
                               <div className="buy-property-items">
-                                <p> <i className="material-icons-outlined">bathtub</i>  Bathrooms: 2</p>
-                                <p> <i className="material-icons-outlined">bento</i>  Wardrobe :1 </p>
-                                <p className="mb-lg-0"> <i className="material-icons-outlined">ac_unit</i> AC : 4 </p>
+                                <p> <i className="material-icons-outlined">bathtub</i>  Bathrooms: {bathrooms || "-"}</p>
                               </div>
                             </div>
                             <div className="col-lg-3 col-md-6">
                               <div className="buy-property-items">
-                                <p> <i className="material-icons-outlined">directions_car_filled</i>  Parking: 1</p>
-                                <p> <i className="material-icons-outlined">tv</i> TV : 4 </p>
-                                <p className="mb-lg-0"> <i className="material-icons-outlined">kitchen</i>Fridge : 1  </p>
-                              </div>
-                            </div>
-                            <div className="col-lg-3 col-md-6">
-                              <div className="buy-property-items">
-                                <p> <i className="material-icons-outlined">corporate_fare</i> Balcony: Yes</p>
-                                <p> <i className="material-icons-outlined">water</i>  Water Purifier : 2</p>
-                                <p className="mb-lg-0 mb-0"> <i className="material-icons-outlined">checkroom</i>  Curtains : yes </p>
+                                <p> <i className="material-icons-outlined">corporate_fare</i>  Area sqft: {area_sqft}</p>
                               </div>
                             </div>
                           </div>
@@ -284,7 +269,37 @@ export default function PropertyDetailsPage({ params }: { params: Promise<{ id: 
                       </div>
                     )}
                   </div>
-                )}
+
+                {/* About Property */}
+                <div className="accordion-item">
+                  <div className="accordion-header" onClick={() => toggleAccordion("about")}>
+                    <button className="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-3" aria-expanded="true">
+                      About Property
+                    </button>
+                  </div>
+                  {openAccordion === "about" && (
+                    <div id="accordion-3" className="accordion-collapse collapse show">
+                      <div className="accordion-body">
+                        <p className="mb-2">
+                          <i className="fa-solid fa-circle-check text-success me-2 fs-18"></i>{" "}
+                          {/* {keyword} */}
+                        </p>
+                        <p className="mb-2">
+                          <i className="fa-solid fa-circle-check text-success me-2 fs-18"></i>{" "}
+                          {property_category?.name}
+                        </p>
+                        <p className="mb-2">
+                          <i className="fa-solid fa-circle-check text-success me-2 fs-18"></i>{" "}
+                          Address: {address}
+                        </p>
+                        <p className="mb-2">
+                          <i className="fa-solid fa-circle-check text-success me-2 fs-18"></i>{" "}
+                          For {propertyType?.toUpperCase()}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* Amenities */}
                 <div className="accordion-item">
@@ -377,8 +392,8 @@ export default function PropertyDetailsPage({ params }: { params: Promise<{ id: 
             {/* Right side */}
             <div className="col-xl-4 theiaStickySidebar buy-details-item">
               <div className="card">
-                <div className="card-header">
-                  <h5 className="mb-0">Enquiry</h5>
+                <div className="card-header" style={{ backgroundColor: "var(--primary)" }}>
+                  <h5 className="mb-0 text-light">Enquiry</h5>
                 </div>
                 <div className="card-body">
                   {/* <div className="card bg-light border-0 rounded shadow-none custom-btn">

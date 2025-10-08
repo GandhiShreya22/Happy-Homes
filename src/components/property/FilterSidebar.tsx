@@ -1,37 +1,64 @@
 "use client";
 
+import { defaultErrMsg } from "@/src/utils/constants";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import ReactSelect from "react-select";
 
 export default function FilterSidebar({ onApply }: { onApply: (filters: any) => void }) {
   const [categories, setCategories] = useState<any[]>([]);
   const [amenities, setAmenities] = useState<any[]>([]);
+  const [keywords, setKeywords] = useState<any[]>([]);
   const [filters, setFilters] = useState({
     search: "",
     location: "",
     bedrooms: "",
     bathrooms: "",
-    minSqft: "",
+    minSqft: 0,
     category: [] as number[],
     amenities: [] as number[],
+    keywords: null as number | null,
     minPrice: 0,
     maxPrice: 0,
   });
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const filtersObj = {
+      search: urlParams.get("search") || "",
+      location: urlParams.get("location") || "",
+      bedrooms: urlParams.get("bedrooms") || "",
+      bathrooms: urlParams.get("bathrooms") || "",
+      minSqft: urlParams.get("minSqft") || 0,
+      category: urlParams.get("category") || [],
+      amenities: urlParams.get("amenities") || [],
+      keywords: urlParams.get("keywords") ? parseInt(urlParams.get("keywords")!) : null,
+      minPrice: urlParams.get("minPrice") || 0,
+      maxPrice: urlParams.get("maxPrice") || 0,
+    };
+    setFilters(filtersObj as any);
+    onApply(filtersObj);
+  }, [window.location.search]);
 
   // Fetch categories & amenities
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [catRes, amRes] = await Promise.all([
+        const [catRes, amRes, kwRes] = await Promise.all([
           fetch("/api/categories"),
           fetch("/api/amenities"),
+          fetch("/api/keywords"),
         ]);
         const catData = await catRes.json();
         const amData = await amRes.json();
+        const kwData = await kwRes.json();
         if (catData.success) setCategories(catData.data);
         if (amData.success) setAmenities(amData.data);
+        if (kwData.success) setKeywords(kwData.data);
       } catch (err) {
-        console.error("Error fetching filters:", err);
+        toast.error(defaultErrMsg);
       }
     };
     fetchData();
@@ -50,23 +77,18 @@ export default function FilterSidebar({ onApply }: { onApply: (filters: any) => 
     });
   };
 
-  // Handle checkbox changes
-  // const handleCheckboxChange = (id: number, key: "category" | "amenities") => {
-  //   setFilters((prev) => {
-  //     const current = prev[key];
-  //     return {
-  //       ...prev,
-  //       [key]: current.includes(id)
-  //         ? current.filter((item) => item !== id)
-  //         : [...current, id],
-  //     };
-  //   });
-  // };
-
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Handle keyword selection
+  const handleKeywordChange = (selectedOption: any) => {
+    setFilters((prev) => ({
+      ...prev,
+      keywords: selectedOption ? selectedOption.value : null,
+    }));
   };
 
   const handleApply = () => {
@@ -85,6 +107,7 @@ export default function FilterSidebar({ onApply }: { onApply: (filters: any) => 
       maxPrice: 0,
       category: [],
       amenities: [],
+      keywords: null,
     });
 
     onApply({});
@@ -131,7 +154,7 @@ export default function FilterSidebar({ onApply }: { onApply: (filters: any) => 
               />
             </div>
             <div className="mb-3">
-              <label className="form-label mb-1">Select Location</label>
+              <label className="form-label mb-1">Enter Location</label>
               <input
                 type="text"
                 name="location"
@@ -179,6 +202,86 @@ export default function FilterSidebar({ onApply }: { onApply: (filters: any) => 
           </div>
         </div>
 
+        {/* Keywords */}
+        {keywords?.length > 0 && (
+        <div className="filter-set mt-3">
+          <div
+            className="d-flex justify-content-between w-100 filter-search-head"
+            data-bs-toggle="collapse"
+            data-bs-target="#keywords"
+            aria-expanded="false"
+            role="button"
+          >
+            <h6 className="mb-0 d-flex align-items-center">
+              <i className="material-icons-outlined me-2 text-secondary">cake</i>
+              Keywords
+            </h6>
+            <i className="material-icons-outlined expand-arrow">expand_less</i>
+          </div>
+          <div id="keywords" className="card-collapse collapse show mt-3">
+            <ReactSelect
+              options={keywords.map((keyword) => ({
+                value: keyword.id,
+                label: keyword.name,
+              }))}
+              value={keywords.find((keyword) => keyword.id === filters.keywords) ? {
+                value: filters.keywords!,
+                label: keywords.find((keyword) => keyword.id === filters.keywords)!.name,
+              } : null}
+              onChange={handleKeywordChange}
+              placeholder="Select a keyword..."
+              isClearable={true}
+              isSearchable={true}
+              className="react-select-container"
+              classNamePrefix="react-select"
+              styles={{
+                control: (baseStyles) => ({
+                  ...baseStyles,
+                  borderColor: '#e9ecef',
+                  borderRadius: '8px',
+                  minHeight: '40px',
+                  '&:hover': {
+                    borderColor: '#ced4da',
+                  },
+                  '&:focus-within': {
+                    borderColor: '#0d6efd',
+                    boxShadow: '0 0 0 0.2rem rgba(13, 110, 253, 0.25)',
+                  },
+                }),
+                placeholder: (baseStyles) => ({
+                  ...baseStyles,
+                  color: '#6c757d',
+                  fontSize: '14px',
+                }),
+                option: (baseStyles, state) => ({
+                  ...baseStyles,
+                  backgroundColor: state.isSelected
+                    ? '#0d6efd'
+                    : state.isFocused
+                    ? '#f8f9fa'
+                    : 'white',
+                  color: state.isSelected ? 'white' : '#212529',
+                  fontSize: '14px',
+                  '&:hover': {
+                    backgroundColor: state.isSelected ? '#0d6efd' : '#f8f9fa',
+                  },
+                }),
+                singleValue: (baseStyles) => ({
+                  ...baseStyles,
+                  color: '#212529',
+                  fontSize: '14px',
+                }),
+                input: (baseStyles) => ({
+                  ...baseStyles,
+                  color: '#212529',
+                  fontSize: '14px',
+                }),
+              }}
+            />
+          </div>
+        </div>
+        )}
+
         {/* Categories */}
         <div className="filter-set mt-3">
           <div
@@ -213,6 +316,7 @@ export default function FilterSidebar({ onApply }: { onApply: (filters: any) => 
         </div>
 
         {/* Amenities */}
+        {amenities?.length > 0 && (
         <div className="filter-set mt-3">
           <div
             className="d-flex justify-content-between w-100 filter-search-head"
@@ -244,6 +348,7 @@ export default function FilterSidebar({ onApply }: { onApply: (filters: any) => 
             ))}
           </div>
         </div>
+        )}
 
         {/* Price */}
         <div className="filter-set mt-3">
@@ -286,9 +391,9 @@ export default function FilterSidebar({ onApply }: { onApply: (filters: any) => 
                   />
                 </div>
               </div>
-              <p className="mb-0">
+              {/* <p className="mb-0">
                 Range : <span className="text-dark">INR 200 - INR 5695</span>
-              </p>
+              </p> */}
             </div>
           </div>
         </div>
@@ -296,7 +401,7 @@ export default function FilterSidebar({ onApply }: { onApply: (filters: any) => 
 
       <div className="filter-footer">
         <button
-          onClick={() => handleApply}
+          onClick={handleApply}
           className="btn btn-dark w-100"
         >
           Apply Filter

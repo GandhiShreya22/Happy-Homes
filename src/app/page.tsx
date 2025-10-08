@@ -1,3 +1,6 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 import { testimonials } from "@/src/data/testimonials";
 import { faqGroups } from "@/src/data/faqsData";
 import PropertyTypeSlider from "@/src/components/PropertyTypeSlider";
@@ -6,8 +9,18 @@ import FeaturedRentSlider from "@/src/components/featuredProperties/FeaturedRent
 import CitiesSection from "@/src/components/CitiesSection";
 import TestimonialCard from "@/src/components/TestimonialCard";
 import FAQAccordion from "@/src/components/FAQAccordion";
+import PropertySearchForm from "@/src/components/property/PropertySearchForm";
+import { usePropertyData } from "@/src/hooks/usePropertyData";
 
 export default function HomePage() {
+  const { keywords, categories, loading, error } = usePropertyData();
+  const router = useRouter();
+
+  const handleSearchSubmit = async (formData: any) => {
+    // redirect to respective listing page
+    router.push(`/${formData.type}-property?${new URLSearchParams(formData).toString()}`);
+  };
+
   return (
     <>
       <section className="Home-banner-section">
@@ -37,87 +50,21 @@ export default function HomePage() {
 
             <div className="tab-content aos" data-aos="fade-down" data-aos-duration="1000">
               <div className="tab-pane fade show active" id="buy_property" role="tabpanel">
-                <div className="search-item">
-                  <form action="#">
-                    <div className="d-flex align-items-bottom flex-wrap flex-lg-nowrap gap-3">
-                      <div className="flex-fill select-field w-100">
-                        <label className="form-label">Keyword</label>
-                        <select className="select">
-                          <option>Select</option>
-                          <option>Buy</option>
-                          <option>Sell</option>
-                        </select>
-                      </div>
-                      <div className="flex-fill select-field w-100">
-                        <label className="form-label">Property Type</label>
-                        <select className="select">
-                          <option>Select</option>
-                          <option>Buy Property</option>
-                          <option>Rent Property</option>
-                        </select>
-                      </div>
-                      <div className="flex-fill select-field w-100">
-                        <label className="form-label">Address</label>
-                        <input type="text" className="form-control" />
-                      </div>
-                      <div className="flex-fill select-field w-100">
-                        <label className="form-label">Min Price</label>
-                        <input type="text" className="form-control" placeholder="$" />
-                      </div>
-                      <div className="flex-fill select-field w-100">
-                        <label className="form-label">Max Price</label>
-                        <input type="text" className="form-control" placeholder="$" />
-                      </div>
-                      <div className="custom-search-item d-flex align-items-end">
-                        <button type="submit" className="btn btn-primary">
-                          <i className="material-icons-outlined">search</i>
-                        </button>
-                      </div>
-                    </div>
-                  </form>
-                </div>
+                <PropertySearchForm
+                  keywords={keywords}
+                  categories={categories}
+                  onSubmit={handleSearchSubmit}
+                  type="buy"
+                />
               </div>
 
               <div className="tab-pane fade" id="rent_property" role="tabpanel">
-                <div className="search-item">
-                  <form action="#">
-                    <div className="d-flex align-items-bottom flex-wrap flex-lg-nowrap gap-3">
-                      <div className="flex-fill select-field  w-100">
-                        <label className="form-label">Keyword</label>
-                        <select className="select">
-                          <option>Select</option>
-                          <option>Buy</option>
-                          <option>Sell</option>
-                        </select>
-                      </div>
-                      <div className="flex-fill select-field w-100">
-                        <label className="form-label">Property Type</label>
-                        <select className="select">
-                          <option>Select</option>
-                          <option>Buy Property</option>
-                          <option>Rent Property</option>
-                        </select>
-                      </div>
-                      <div className="flex-fill select-field w-100">
-                        <label className="form-label">Address</label>
-                        <input type="text" className="form-control" />
-                      </div>
-                      <div className="flex-fill select-field w-100">
-                        <label className="form-label">Min Price</label>
-                        <input type="text" className="form-control" placeholder="$" />
-                      </div>
-                      <div className="flex-fill select-field w-100">
-                        <label className="form-label">Max Price</label>
-                        <input type="text" className="form-control" placeholder="$" />
-                      </div>
-                      <div className="custom-search-item d-flex align-items-end">
-                        <button type="submit" className="btn btn-primary">
-                          <i className="material-icons-outlined">search</i>
-                        </button>
-                      </div>
-                    </div>
-                  </form>
-                </div>
+                <PropertySearchForm
+                  keywords={keywords}
+                  categories={categories}
+                  onSubmit={handleSearchSubmit}
+                  type="rent"
+                />
               </div>
             </div>
           </div>
@@ -199,7 +146,7 @@ export default function HomePage() {
             <p className="mb-0 text-center">Hand-picked selection of quality places</p>
           </div>
 
-          {/* <FeaturedSalesSlider /> */}
+          <FeaturedSalesSlider />
 
           <div className="text-center d-flex align-items-center justify-content-center m-auto">
             <a href="/buy-property" className="btn btn-lg btn-dark d-flex align-items-center gap-1">
@@ -224,7 +171,7 @@ export default function HomePage() {
             <p className="mb-0 text-center">Hand-picked selection of quality places</p>
           </div>
 
-          {/* <FeaturedRentSlider /> */}
+          <FeaturedRentSlider />
 
           <div className="text-center d-flex align-items-center justify-content-center m-auto">
             <a href="/rent-property" className="btn btn-lg btn-dark d-flex align-items-center gap-1">
@@ -285,47 +232,69 @@ export default function HomePage() {
         <div className="container">
 
           <div className="row justify-content-center">
-            {/* buy property item */}
+
+            {/* Service 1: Lease / Buy / Sell / Investment */}
             <div className="col-lg-4 col-md-6">
-              <div className="buy-property-item text-center mb-lg-0 mb-md-0  mb-4 aos" data-aos="fade-down" data-aos-duration="1000">
+              <div
+                className="buy-property-item text-center mb-lg-0 mb-md-0  mb-4 aos"
+                data-aos="fade-down"
+                data-aos-duration="1000"
+              >
                 <div className="img-card overflow-hidden text-center">
-                  <a href="/buy-property"><img src="/assets/img/home/city/property-img-1.jpg" alt="Property Image" /></a>
+                  <a>
+                    <img
+                      src="/assets/img/home/city/property-img-3.jpg"
+                      alt="Lease Buy Sell Investment"
+                      className="img-fluid"
+                    />
+                  </a>
                 </div>
                 <div className="buy-property bg-white d-flex align-items-center justify-content-between">
-                  <h6 className="mb-0"><a href="/buy-property">Buy a Property</a></h6>
-                  <a href="/buy-property" className="arrow buy-arrow d-flex align-items-center justify-content-center bg-error rounded-circle">
-                    <i className='fa-solid fa-arrow-right'></i>
-                  </a>
+                  <h6 className="mb-0"><a href="">Lease / Buy / Sell / Investment</a></h6>
                 </div>
               </div>
             </div>
 
-            {/* sell property item */}
-            {/* <div className="col-lg-4 col-md-6" >
-              <div className="buy-property-item mb-lg-0 mb-4 text-center aos" data-aos="fade-up" data-aos-duration="1000">
+            {/* Service 2: Housing Management */}
+            <div className="col-lg-4 col-md-6">
+              <div
+                className="buy-property-item text-center mb-lg-0 mb-md-0  mb-4 aos"
+                data-aos="fade-down"
+                data-aos-duration="1200"
+              >
                 <div className="img-card overflow-hidden text-center">
-                  <a href="/rent-property"><img src="/assets/img/home/city/property-img-2.jpg" alt="Property Image" /></a>
+                  <a>
+                    <img
+                      src="/assets/img/home/city/property-img-3.jpg"
+                      alt="Housing Management"
+                      className="img-fluid"
+                    />
+                  </a>
                 </div>
                 <div className="buy-property bg-white d-flex align-items-center justify-content-between">
-                  <h6 className="mb-0"><a href="/rent-property">Sell a Property</a></h6>
-                  <a href="/rent-property" className="arrow sell-arrow d-flex align-items-center justify-content-center bg-warning rounded-circle">
-                    <i className='fa-solid fa-arrow-right'></i>
-                  </a>
+                  <h6 className="mb-0"><a href="">Housing Management</a></h6>
                 </div>
               </div>
-            </div> */}
+            </div>
 
-            {/* rent property item */}
-            <div className="col-lg-4 col-md-6" >
-              <div className="buy-property-item mb-0 text-center aos" data-aos="fade-down" data-aos-duration="1000">
+            {/* Service 3: Interior Design */}
+            <div className="col-lg-4 col-md-6">
+              <div
+                className="buy-property-item text-center mb-lg-0 mb-md-0  mb-4 aos"
+                data-aos="fade-down"
+                data-aos-duration="1400"
+              >
                 <div className="img-card overflow-hidden text-center">
-                  <a href="/rent-property"><img src="/assets/img/home/city/property-img-3.jpg" alt="Property Image" /></a>
+                  <a>
+                    <img
+                      src="/assets/img/home/city/property-img-3.jpg"
+                      alt="Interior Design"
+                      className="img-fluid"
+                    />
+                  </a>
                 </div>
                 <div className="buy-property bg-white d-flex align-items-center justify-content-between">
-                  <h6 className="mb-0"><a href="/rent-property">Rent a Property</a></h6>
-                  <a href="/rent-property" className="arrow rent-arrow d-flex align-items-center justify-content-center bg-info rounded-circle">
-                    <i className='fa-solid fa-arrow-right'></i>
-                  </a>
+                  <h6 className="mb-0"><a href="">Interior Design</a></h6>
                 </div>
               </div>
             </div>
