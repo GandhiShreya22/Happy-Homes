@@ -6,7 +6,11 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import ReactSelect from "react-select";
 
-export default function FilterSidebar({ onApply }: { onApply: (filters: any) => void }) {
+export default function FilterSidebar({
+  onApply,
+}: {
+  onApply: (filters: any) => void;
+}) {
   const [categories, setCategories] = useState<any[]>([]);
   const [amenities, setAmenities] = useState<any[]>([]);
   const [keywords, setKeywords] = useState<any[]>([]);
@@ -24,23 +28,27 @@ export default function FilterSidebar({ onApply }: { onApply: (filters: any) => 
   });
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
 
-    const filtersObj = {
-      search: urlParams.get("search") || "",
-      location: urlParams.get("location") || "",
-      bedrooms: urlParams.get("bedrooms") || "",
-      bathrooms: urlParams.get("bathrooms") || "",
-      minSqft: urlParams.get("minSqft") || 0,
-      category: urlParams.get("category") || [],
-      amenities: urlParams.get("amenities") || [],
-      keywords: urlParams.get("keywords") ? parseInt(urlParams.get("keywords")!) : null,
-      minPrice: urlParams.get("minPrice") || 0,
-      maxPrice: urlParams.get("maxPrice") || 0,
-    };
-    setFilters(filtersObj as any);
-    onApply(filtersObj);
-  }, [window.location.search]);
+      const filtersObj = {
+        search: urlParams.get("search") || "",
+        location: urlParams.get("location") || "",
+        bedrooms: urlParams.get("bedrooms") || "",
+        bathrooms: urlParams.get("bathrooms") || "",
+        minSqft: urlParams.get("minSqft") || 0,
+        category: urlParams.get("category") || [],
+        amenities: urlParams.get("amenities") || [],
+        keywords: urlParams.get("keywords")
+          ? parseInt(urlParams.get("keywords")!)
+          : null,
+        minPrice: urlParams.get("minPrice") || 0,
+        maxPrice: urlParams.get("maxPrice") || 0,
+      };
+      setFilters(filtersObj as any);
+      onApply(filtersObj);
+    }
+  }, []);
 
   // Fetch categories & amenities
   useEffect(() => {
@@ -78,7 +86,9 @@ export default function FilterSidebar({ onApply }: { onApply: (filters: any) => 
   };
 
   // Handle input changes
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
@@ -133,7 +143,9 @@ export default function FilterSidebar({ onApply }: { onApply: (filters: any) => 
             role="button"
           >
             <h6 className="d-inline-flex align-items-center mb-0">
-              <i className="material-icons-outlined me-2 text-secondary">search</i>
+              <i className="material-icons-outlined me-2 text-secondary">
+                search
+              </i>
               Search
             </h6>
             <i className="material-icons-outlined expand-arrow">expand_less</i>
@@ -204,82 +216,92 @@ export default function FilterSidebar({ onApply }: { onApply: (filters: any) => 
 
         {/* Keywords */}
         {keywords?.length > 0 && (
-        <div className="filter-set mt-3">
-          <div
-            className="d-flex justify-content-between w-100 filter-search-head"
-            data-bs-toggle="collapse"
-            data-bs-target="#keywords"
-            aria-expanded="false"
-            role="button"
-          >
-            <h6 className="mb-0 d-flex align-items-center">
-              <i className="material-icons-outlined me-2 text-secondary">cake</i>
-              Keywords
-            </h6>
-            <i className="material-icons-outlined expand-arrow">expand_less</i>
+          <div className="filter-set mt-3">
+            <div
+              className="d-flex justify-content-between w-100 filter-search-head"
+              data-bs-toggle="collapse"
+              data-bs-target="#keywords"
+              aria-expanded="false"
+              role="button"
+            >
+              <h6 className="mb-0 d-flex align-items-center">
+                <i className="material-icons-outlined me-2 text-secondary">
+                  cake
+                </i>
+                Keywords
+              </h6>
+              <i className="material-icons-outlined expand-arrow">
+                expand_less
+              </i>
+            </div>
+            <div id="keywords" className="card-collapse collapse show mt-3">
+              <ReactSelect
+                options={keywords.map((keyword) => ({
+                  value: keyword.id,
+                  label: keyword.name,
+                }))}
+                value={
+                  keywords.find((keyword) => keyword.id === filters.keywords)
+                    ? {
+                        value: filters.keywords!,
+                        label: keywords.find(
+                          (keyword) => keyword.id === filters.keywords
+                        )!.name,
+                      }
+                    : null
+                }
+                onChange={handleKeywordChange}
+                placeholder="Select a keyword..."
+                isClearable={true}
+                isSearchable={true}
+                className="react-select-container"
+                classNamePrefix="react-select"
+                styles={{
+                  control: (baseStyles) => ({
+                    ...baseStyles,
+                    borderColor: "#e9ecef",
+                    borderRadius: "8px",
+                    minHeight: "40px",
+                    "&:hover": {
+                      borderColor: "#ced4da",
+                    },
+                    "&:focus-within": {
+                      borderColor: "#0d6efd",
+                      boxShadow: "0 0 0 0.2rem rgba(13, 110, 253, 0.25)",
+                    },
+                  }),
+                  placeholder: (baseStyles) => ({
+                    ...baseStyles,
+                    color: "#6c757d",
+                    fontSize: "14px",
+                  }),
+                  option: (baseStyles, state) => ({
+                    ...baseStyles,
+                    backgroundColor: state.isSelected
+                      ? "#0d6efd"
+                      : state.isFocused
+                      ? "#f8f9fa"
+                      : "white",
+                    color: state.isSelected ? "white" : "#212529",
+                    fontSize: "14px",
+                    "&:hover": {
+                      backgroundColor: state.isSelected ? "#0d6efd" : "#f8f9fa",
+                    },
+                  }),
+                  singleValue: (baseStyles) => ({
+                    ...baseStyles,
+                    color: "#212529",
+                    fontSize: "14px",
+                  }),
+                  input: (baseStyles) => ({
+                    ...baseStyles,
+                    color: "#212529",
+                    fontSize: "14px",
+                  }),
+                }}
+              />
+            </div>
           </div>
-          <div id="keywords" className="card-collapse collapse show mt-3">
-            <ReactSelect
-              options={keywords.map((keyword) => ({
-                value: keyword.id,
-                label: keyword.name,
-              }))}
-              value={keywords.find((keyword) => keyword.id === filters.keywords) ? {
-                value: filters.keywords!,
-                label: keywords.find((keyword) => keyword.id === filters.keywords)!.name,
-              } : null}
-              onChange={handleKeywordChange}
-              placeholder="Select a keyword..."
-              isClearable={true}
-              isSearchable={true}
-              className="react-select-container"
-              classNamePrefix="react-select"
-              styles={{
-                control: (baseStyles) => ({
-                  ...baseStyles,
-                  borderColor: '#e9ecef',
-                  borderRadius: '8px',
-                  minHeight: '40px',
-                  '&:hover': {
-                    borderColor: '#ced4da',
-                  },
-                  '&:focus-within': {
-                    borderColor: '#0d6efd',
-                    boxShadow: '0 0 0 0.2rem rgba(13, 110, 253, 0.25)',
-                  },
-                }),
-                placeholder: (baseStyles) => ({
-                  ...baseStyles,
-                  color: '#6c757d',
-                  fontSize: '14px',
-                }),
-                option: (baseStyles, state) => ({
-                  ...baseStyles,
-                  backgroundColor: state.isSelected
-                    ? '#0d6efd'
-                    : state.isFocused
-                    ? '#f8f9fa'
-                    : 'white',
-                  color: state.isSelected ? 'white' : '#212529',
-                  fontSize: '14px',
-                  '&:hover': {
-                    backgroundColor: state.isSelected ? '#0d6efd' : '#f8f9fa',
-                  },
-                }),
-                singleValue: (baseStyles) => ({
-                  ...baseStyles,
-                  color: '#212529',
-                  fontSize: '14px',
-                }),
-                input: (baseStyles) => ({
-                  ...baseStyles,
-                  color: '#212529',
-                  fontSize: '14px',
-                }),
-              }}
-            />
-          </div>
-        </div>
         )}
 
         {/* Categories */}
@@ -292,7 +314,9 @@ export default function FilterSidebar({ onApply }: { onApply: (filters: any) => 
             role="button"
           >
             <h6 className="mb-0 d-flex align-items-center">
-              <i className="material-icons-outlined me-2 text-secondary">category</i>
+              <i className="material-icons-outlined me-2 text-secondary">
+                category
+              </i>
               Categories
             </h6>
             <i className="material-icons-outlined expand-arrow">expand_less</i>
@@ -307,7 +331,10 @@ export default function FilterSidebar({ onApply }: { onApply: (filters: any) => 
                   checked={filters.category.includes(cat.id)}
                   onChange={() => toggleSelection("category", cat.id)}
                 />
-                <label className="form-check-label ms-2" htmlFor={`cat-${cat.id}`}>
+                <label
+                  className="form-check-label ms-2"
+                  htmlFor={`cat-${cat.id}`}
+                >
                   {cat.name}
                 </label>
               </div>
@@ -317,37 +344,44 @@ export default function FilterSidebar({ onApply }: { onApply: (filters: any) => 
 
         {/* Amenities */}
         {amenities?.length > 0 && (
-        <div className="filter-set mt-3">
-          <div
-            className="d-flex justify-content-between w-100 filter-search-head"
-            data-bs-toggle="collapse"
-            data-bs-target="#amenities"
-            aria-expanded="false"
-            role="button"
-          >
-            <h6 className="mb-0 d-flex align-items-center">
-              <i className="material-icons-outlined me-2 text-secondary">cake</i>
-              Amenities
-            </h6>
-            <i className="material-icons-outlined expand-arrow">expand_less</i>
+          <div className="filter-set mt-3">
+            <div
+              className="d-flex justify-content-between w-100 filter-search-head"
+              data-bs-toggle="collapse"
+              data-bs-target="#amenities"
+              aria-expanded="false"
+              role="button"
+            >
+              <h6 className="mb-0 d-flex align-items-center">
+                <i className="material-icons-outlined me-2 text-secondary">
+                  cake
+                </i>
+                Amenities
+              </h6>
+              <i className="material-icons-outlined expand-arrow">
+                expand_less
+              </i>
+            </div>
+            <div id="amenities" className="card-collapse collapse show mt-3">
+              {amenities.map((am) => (
+                <div key={am.id} className="form-check mb-2">
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    id={`am-${am.id}`}
+                    checked={filters.amenities.includes(am.id)}
+                    onChange={() => toggleSelection("amenities", am.id)}
+                  />
+                  <label
+                    className="form-check-label ms-2"
+                    htmlFor={`am-${am.id}`}
+                  >
+                    {am.name}
+                  </label>
+                </div>
+              ))}
+            </div>
           </div>
-          <div id="amenities" className="card-collapse collapse show mt-3">
-            {amenities.map((am) => (
-              <div key={am.id} className="form-check mb-2">
-                <input
-                  type="checkbox"
-                  className="form-check-input"
-                  id={`am-${am.id}`}
-                  checked={filters.amenities.includes(am.id)}
-                  onChange={() => toggleSelection("amenities", am.id)}
-                />
-                <label className="form-check-label ms-2" htmlFor={`am-${am.id}`}>
-                  {am.name}
-                </label>
-              </div>
-            ))}
-          </div>
-        </div>
         )}
 
         {/* Price */}
@@ -360,7 +394,9 @@ export default function FilterSidebar({ onApply }: { onApply: (filters: any) => 
             role="button"
           >
             <h6 className="mb-0 d-flex align-items-center">
-              <i className="material-icons-outlined me-2 text-secondary">monetization_on</i>
+              <i className="material-icons-outlined me-2 text-secondary">
+                monetization_on
+              </i>
               Price
             </h6>
             <i className="material-icons-outlined expand-arrow">expand_less</i>
@@ -400,10 +436,7 @@ export default function FilterSidebar({ onApply }: { onApply: (filters: any) => 
       </div>
 
       <div className="filter-footer">
-        <button
-          onClick={handleApply}
-          className="btn btn-dark w-100"
-        >
+        <button onClick={handleApply} className="btn btn-dark w-100">
           Apply Filter
         </button>
       </div>

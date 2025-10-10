@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
-import Breadcrumb from '@/src/components/Breadcrumb';
-import FilterSidebar from '@/src/components/property/FilterSidebar';
-import PropertyCard from '@/src/components/property/PropertyCard';
-import TopFilterBar from '@/src/components/property/TopFilterBar';
-import { defaultErrMsg } from '@/src/utils/constants';
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import Breadcrumb from "@/src/components/Breadcrumb";
+import FilterSidebar from "@/src/components/property/FilterSidebar";
+import PropertyCard from "@/src/components/property/PropertyCard";
+import TopFilterBar from "@/src/components/property/TopFilterBar";
+import { defaultErrMsg } from "@/src/utils/constants";
 
 export default function BuyPropertyPage() {
   const [properties, setProperties] = useState([]);
@@ -23,16 +23,16 @@ export default function BuyPropertyPage() {
   useEffect(() => {
     return () => {
       setProperties([]);
-    }
+    };
   }, []);
 
   const fetchProperties = async (reset = false) => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-    params.append("type", "sale");
-    params.append("page", reset ? "1" : page.toString());
-    params.append("limit", limit.toString());
+      params.append("type", "sale");
+      params.append("page", reset ? "1" : page.toString());
+      params.append("limit", limit.toString());
 
       if (filters.search) params.append("search", filters.search);
       if (filters.location) params.append("location", filters.location);
@@ -67,10 +67,10 @@ export default function BuyPropertyPage() {
           setHasMore(false); // No data returned, stop loading more
         }
       } else {
-        toast.error(data.message)
+        toast.error(data.message);
       }
     } catch (error) {
-      toast.error(defaultErrMsg)
+      toast.error(defaultErrMsg);
     } finally {
       setLoading(false);
     }
@@ -104,7 +104,11 @@ export default function BuyPropertyPage() {
               <div className="row mb-4">
                 {properties?.length ? (
                   properties?.map((property: any) => (
-                    <PropertyCard key={property.id} property={property} link="/property-details" />
+                    <PropertyCard
+                      key={property.id}
+                      property={property}
+                      link="/property-details"
+                    />
                   ))
                 ) : (
                   <div className="text-center mt-4">
@@ -115,9 +119,16 @@ export default function BuyPropertyPage() {
 
               {hasMore && properties.length && (
                 <div className="text-center">
-                  <button className="btn btn-dark d-inline-flex align-items-center" onClick={handleLoadMore} disabled={loading}>
-                    {loading && <span className='spinner-border spinner-border-sm me-2'></span>}
-                    <i className="material-icons-outlined me-1">autorenew</i>Load More
+                  <button
+                    className="btn btn-dark d-inline-flex align-items-center"
+                    onClick={handleLoadMore}
+                    disabled={loading}
+                  >
+                    {loading && (
+                      <span className="spinner-border spinner-border-sm me-2"></span>
+                    )}
+                    <i className="material-icons-outlined me-1">autorenew</i>
+                    Load More
                   </button>
                 </div>
               )}
