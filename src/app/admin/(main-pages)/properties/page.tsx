@@ -1,6 +1,5 @@
 "use client";
 
-import { PencilIcon } from "@/src/assets/icons";
 import PageBreadcrumb from "@/src/components/admin/common/PageBreadCrumb";
 import Button from "@/src/components/button/Button";
 import { defaultErrMsg } from "@/src/utils/constants";
@@ -17,11 +16,11 @@ type Property = {
   status: string;
   purpose: string;
   price: number;
-  created_at: string;
-  updated_at: string,
+  created_at: string | null;
+  updated_at: string | null;
   type: string;
-  property_category: { id: number; name: string }
-  admin: { id: number; email: string };
+  property_category: { id: number; name: string } | null;
+  admin: { id: number; email: string } | null;
   images: { id: number; image_url: string }[];
 };
 
@@ -48,6 +47,7 @@ export default function PropertyListing() {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [mounted, setMounted] = useState(false);
+  const [togglingId, setTogglingId] = useState<number | null>(null); // for per-row toggle spinner
 
   // Ensure client-only code to prevent hydration mismatch
   useEffect(() => {
@@ -80,6 +80,46 @@ export default function PropertyListing() {
     fetchProperties(page, perPage);
   }, [page, perPage]);
 
+  const handleToggleStatus = async (property: Property) => {
+    const newStatus = property.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+
+    // optional confirmation
+    // if (!confirm(`Are you sure you want to ${newStatus === "ACTIVE" ? "activate" : "deactivate"} this property?`)) {
+    //   return;
+    // }
+
+    try {
+      setTogglingId(property.id);
+      const res = await fetch(`/api/admin/property/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          property_id: property.id,
+          status: newStatus,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data?.success) {
+        toast.error(data?.message || `Failed to update status`);
+        return;
+      }
+
+      toast.success(
+        `Property ${newStatus === "ACTIVE" ? "activated" : "deactivated"} successfully!`
+      );
+
+      // Always refetch fresh data from backend after API success
+      fetchProperties(page, perPage);
+    } catch (error) {
+      console.error("Toggle status error:", error);
+      toast.error(defaultErrMsg);
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
   const columns: TableColumn<Property>[] = [
     {
       name: "Title",
@@ -88,10 +128,12 @@ export default function PropertyListing() {
       cell: (row) => (
         <div>{row.title}</div>
       ),
+      minWidth: "230px"
     },
     {
       name: "Type",
       selector: (row) => row.type,
+      cell: (row) => row.type?.toUpperCase(),
       sortable: true,
     },
     {
@@ -145,9 +187,53 @@ export default function PropertyListing() {
       ),
     },
     {
-      name: "Actions",
+      name: "Toggle Status",
       cell: (row) => (
-        <div className="space-x-2">
+        <div
+          className="relative flex items-center justify-center"
+          style={{ minWidth: 70 }}
+        >
+          {togglingId === row.id ? (
+            <div className="animate-spin">
+              {/* <CircleWhite className="w-4 h-4 animate-spin stroke-current" strokeColor="#4B5563" /> */}
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="loading">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.18" strokeWidth="2.5" fill="none" />
+                <path d="M22 12a10 10 0 0 1-10 10"
+                  stroke="currentColor"
+                  strokeWidth="2.8"
+                  strokeLinecap="round"
+                  fill="none" />
+              </svg>
+            </div>
+          ) : (
+            <label className="relative inline-flex cursor-pointer items-center">
+              <input
+                type="checkbox"
+                checked={row.status === "ACTIVE"}
+                onChange={() => handleToggleStatus(row)}
+                disabled={togglingId === row.id}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-green-500 transition-all duration-300"></div>
+              <div className="absolute left-0.5 top-0.5 bg-white w-5 h-5 rounded-full transition-transform duration-300 peer-checked:translate-x-5"></div>
+            </label>
+          )}
+        </div>
+      ),
+    },
+    {
+      name: "Actions",
+      right: true,
+      cell: (row) => (
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/property-details/${row.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline"
+          >
+            View
+          </Link>
           <Link
             href={`/admin/properties/add?id=${row.id}`}
             className="text-warning-600 hover:underline"
@@ -176,6 +262,7 @@ export default function PropertyListing() {
         </div>
 
         <DataTable
+          className="custom-datatable"
           columns={columns}
           data={properties || []}
           progressPending={loading}
@@ -193,6 +280,7 @@ export default function PropertyListing() {
           striped
           responsive
           fixedHeader
+          theme="solarized"
         />
       </div>
     </div>

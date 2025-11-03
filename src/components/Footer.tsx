@@ -1,4 +1,8 @@
+import { usePropertyData } from "../hooks/usePropertyData";
+
 export default function Footer() {
+	const { categories } = usePropertyData();
+
 	return (
 		<footer className="footer footer-dark">
 			<div className="footer-top">
@@ -19,44 +23,31 @@ export default function Footer() {
 								</div>
 							</div>
 						</div>
-						<div className="col-lg-2 col-md-6 col-sm-4">
+						<div className="col-lg-3 col-md-6 col-sm-4">
 							<div className="footer-widget">
 								<h5 className="footer-title">Company</h5>
 								<ul className="footer-menu">
-									<li><a href="#">About Us</a></li>
-									<li><a href="#">Society Management</a></li>
-									<li><a href="#">Interior and Architecture</a></li>
-									<li><a href="#">Buy and Rent Property</a></li>
-									<li><a href="#">Contact Us</a></li>
+									<li><a href="/about">About Us</a></li>
+									<li><a href="/society-management">Society Management</a></li>
+									<li><a href="/interior-architecture">Interior and Architecture</a></li>
+									<li><a href="/buy-rent">Buy and Rent Property</a></li>
+									<li><a href="/contact">Contact Us</a></li>
 								</ul>
 							</div>
 						</div>
-						<div className="col-lg-2 col-md-4 col-sm-4">
+						{categories?.length > 0 && (
+						<div className="col-lg-2 col-md-6 col-sm-4">
 							<div className="footer-widget">
 								<h5 className="footer-title">Property</h5>
 								<ul className="footer-menu">
-									<li><a href="#">Houses</a></li>
-									<li><a href="#">Offices</a></li>
-									<li><a href="#">Villas</a></li>
-									<li><a href="#">Apartment</a></li>
-									<li><a href="#">Farmhouses</a></li>
+									{categories.slice(0, 5).map((catg) => (
+										<li key={`catg-${catg.id}`}><a href="#">{catg.name}</a></li>
+									))}
 								</ul>
 							</div>
 						</div>
-						<div className="col-lg-2 col-md-4 col-sm-4">
-							<div className="footer-widget">
-								<h5 className="footer-title">Citis/States</h5>
-								<ul className="footer-menu">
-									<li><a href="#">Gujarat</a></li>
-									<li><a href="#">Maharashtra</a></li>
-									<li><a href="#">Pune</a></li>
-									<li><a href="#">Bangalore</a></li>
-									<li><a href="#">Delhi</a></li>
-									<li><a href="#">Hyderabad</a></li>
-								</ul>
-							</div>
-						</div>
-						<div className="col-lg-2 col-md-4 col-sm-4">
+						)}
+						<div className="col-lg-3 col-md-6 col-sm-4">
 							<div className="footer-widget">
 								<h5 className="footer-title">Useful Links</h5>
 								<ul className="footer-menu">

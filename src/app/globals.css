@@ -36,8 +36,8 @@ body {
 } */
 
 .client-wrapper .input-group .input-group-text {
-  border-color: var(--input-border);
   border: 1px solid;
+  border-color: var(--border-color);
 }
 .client-wrapper .input-group .input-group-text:focus {
   border-color: var(--input-border);

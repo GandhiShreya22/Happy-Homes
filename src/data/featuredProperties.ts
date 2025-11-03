@@ -24,4 +24,5 @@ export interface Property {
     status: boolean,
     amenities: string[],
     admin_id: number,
+    keyword_id: number,
 }

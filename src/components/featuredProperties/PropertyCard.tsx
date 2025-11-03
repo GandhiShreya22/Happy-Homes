@@ -17,7 +17,7 @@ export default function PropertyCard({ property, link = "/property-details" }: P
         <div className="buy-grid-img mb-0 rounded-0 position-relative">
           <Link href={detailPageLink}>
             <Image
-              className="img-fluid"
+              // className="img-fluid"
               src={property?.images?.length ? property.images[0]?.image_url : "/assets/img/property/default-property.jpg"}
               alt={property.title}
               width={415}

@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { defaultErrMsg } from "@/src/utils/constants";
 import { formatAmountToInrCurrency, formatDateToGB } from "@/src/utils/helpers";
 import { Property } from "@/src/data/featuredProperties";
+import { usePropertyData } from "@/src/hooks/usePropertyData";
 
 type FormValues = {
   name: string;
@@ -21,10 +22,14 @@ export default function PropertyDetailsPage({ params }: { params: Promise<{ id: 
   const [openAccordion, setOpenAccordion] = useState<string | null>("description");
   const [propertyData, setPropertyData] = useState<Property | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadProperty, setLoadProperty] = useState(false);
+
+  const { keywords } = usePropertyData();
 
   const {
     title,
     slug,
+    keyword_id,
     property_category,
     type: propertyType,
     price,
@@ -45,6 +50,10 @@ export default function PropertyDetailsPage({ params }: { params: Promise<{ id: 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>();
 
   useEffect(() => {
+    setLoadProperty(true);
+  }, []);
+
+  useEffect(() => {
     if (id) {
       fetchProperty(id); // Fetch property details when `id` is available
     }
@@ -52,6 +61,7 @@ export default function PropertyDetailsPage({ params }: { params: Promise<{ id: 
 
   const fetchProperty = async (propertyId: string) => {
     setLoading(true);
+    setLoadProperty(true);
     try {
       const res = await fetch(`/api/property/${propertyId}`); // API call to fetch property by `id`
       const data = await res.json();
@@ -65,6 +75,7 @@ export default function PropertyDetailsPage({ params }: { params: Promise<{ id: 
       toast.error(defaultErrMsg); // Default error message in case of an issue
     } finally {
       setLoading(false);
+      setLoadProperty(false);
     }
   };
 
@@ -118,10 +129,6 @@ export default function PropertyDetailsPage({ params }: { params: Promise<{ id: 
     }
   };
 
-  if (!propertyData) {
-    return <div className="text-center">Property not found.</div>; // Show this if no property data is available
-  }
-
   return (
     <div className="page-wrapper">
       {/* Header */}
@@ -153,6 +160,12 @@ export default function PropertyDetailsPage({ params }: { params: Promise<{ id: 
       {/* Content */}
       <div className="content">
         <div className="container">
+          {loadProperty ? (
+            <div className="d-flex align-items-center justify-content-center my-4">
+              <span className="spinner-border spinner-border-lg me-2" /> Loading Property details...
+            </div>
+          ) : (
+          propertyData ? (
           <div className="row">
             {/* Left Side */}
             <div className="col-xl-8">
@@ -282,7 +295,7 @@ export default function PropertyDetailsPage({ params }: { params: Promise<{ id: 
                       <div className="accordion-body">
                         <p className="mb-2">
                           <i className="fa-solid fa-circle-check text-success me-2 fs-18"></i>{" "}
-                          {/* {keyword} */}
+                          {keywords?.find(item => item.id === keyword_id)?.name}
                         </p>
                         <p className="mb-2">
                           <i className="fa-solid fa-circle-check text-success me-2 fs-18"></i>{" "}
@@ -362,7 +375,7 @@ export default function PropertyDetailsPage({ params }: { params: Promise<{ id: 
                 </div> */}
 
                 {/* Reviews */}
-                <div className="accordion-item">
+                {/* <div className="accordion-item">
                   <div
                     className="accordion-header cursor-pointer"
                     onClick={() => toggleAccordion("reviews")}
@@ -385,7 +398,7 @@ export default function PropertyDetailsPage({ params }: { params: Promise<{ id: 
                       </div>
                     </div>
                   )}
-                </div>
+                </div> */}
               </div>
             </div>
 
@@ -478,6 +491,10 @@ export default function PropertyDetailsPage({ params }: { params: Promise<{ id: 
               </div>
             </div>
           </div>
+          ) : (
+            <div className="text-center">Property not found.</div>
+          )
+          )}
         </div>
       </div>
     </div>

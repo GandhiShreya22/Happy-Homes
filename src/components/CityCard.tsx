@@ -18,13 +18,13 @@ export default function CityCard({ city, aosDelay = 1000 }: CityCardProps) {
       </div>
       <div className="city-name">
         <h5 className="mb-1">{city.name}</h5>
-        <p className="mb-0">{city.properties}</p>
+        {/* <p className="mb-0">{city.properties} Properties</p> */}
       </div>
-      <div className="arrow-overlay">
+      {/* <div className="arrow-overlay">
         <Link href={city.link} aria-label={`View properties in ${city.name}`}>
           <i className="fa-solid fa-arrow-right" aria-hidden="true"></i>
         </Link>
-      </div>
+      </div> */}
     </div>
   );
 }

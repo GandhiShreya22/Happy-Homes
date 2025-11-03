@@ -1,29 +1,37 @@
 // Add new property
+export const runtime = "nodejs";
+
 import { prisma } from "@/lib/prisma";
 import formidable from "formidable";
 import { IncomingMessage } from "http";
 import fs from "fs";
 import path from "path";
+import { Readable } from "node:stream";
 
-// Important: disable default body parser
+// Important: disable Next.js default body parser so formidable can parse multipart/form-data
 export const config = {
   api: {
     bodyParser: false,
   },
 };
 
-const uploadDir = path.join(process.cwd(), "/public/uploads");
+// Ensure upload directory exists
+const uploadDir = path.join(process.cwd(), "public", "uploads");
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 // Convert Next.js Request -> IncomingMessage for formidable
 async function toNodeRequest(req: Request): Promise<IncomingMessage> {
-  const { Readable } = await import("stream");
-  const body = Readable.from(Buffer.from(await req.arrayBuffer()));
-  const nodeReq = Object.assign(body, {
+  // Read arrayBuffer once and create readable stream from it
+  const buffer = Buffer.from(await req.arrayBuffer());
+  const stream = Readable.from(buffer);
+
+  // Attach required properties that formidable expects
+  const nodeReq = Object.assign(stream, {
     headers: Object.fromEntries(req.headers),
     method: req.method,
     url: req.url,
   });
+
   return nodeReq as unknown as IncomingMessage;
 }
 
@@ -33,11 +41,13 @@ function parseForm(req: IncomingMessage): Promise<{ fields: formidable.Fields; f
     multiples: true,
     uploadDir,
     keepExtensions: true,
+    // You can tune file size limits here if required:
+    // maxFileSize: 50 * 1024 * 1024,
   });
 
   return new Promise((resolve, reject) => {
     form.parse(req, (err, fields, files) => {
-      if (err) reject(err);
+      if (err) return reject(err);
       resolve({ fields, files });
     });
   });
@@ -48,6 +58,60 @@ function getField<T = string>(field: any, fallback: T | null = null): T | null {
   if (Array.isArray(field)) return (field[0] as T) ?? fallback;
   if (field !== undefined && field !== null) return field as T;
   return fallback;
+}
+
+/**
+ * Helper to parse "amenities" which may arrive as:
+ * - JSON string like "[1,2,3]"
+ * - Comma separated "1,2,3"
+ * - single id "3"
+ * - array of "1","2","3"
+ */
+function parseAmenityField(field: any): number[] {
+  if (!field) return [];
+  try {
+    // If it's already an array from formidable
+    if (Array.isArray(field)) {
+      return field.flatMap((val) => {
+        if (typeof val === "string" && val.trim().startsWith("[")) {
+          // stringified array inside array => parse
+          try {
+            return JSON.parse(val).map((id: any) => Number(id));
+          } catch {
+            return [];
+          }
+        }
+        // Could be '1,2,3' or '1'
+        if (typeof val === "string" && val.includes(",")) {
+          return val.split(",").map((s) => Number(s.trim()));
+        }
+        return [Number(val)];
+      }).filter((n) => !isNaN(n));
+    }
+
+    // If it's a string & looks like JSON array
+    if (typeof field === "string") {
+      const str = field.trim();
+      if (str.startsWith("[")) {
+        const arr = JSON.parse(str);
+        return arr.map((id: any) => Number(id)).filter((n) => !isNaN(n));
+      }
+      // comma separated
+      if (str.includes(",")) {
+        return str.split(",").map((s) => Number(s.trim())).filter((n) => !isNaN(n));
+      }
+      // single id
+      const single = Number(str);
+      return !isNaN(single) ? [single] : [];
+    }
+
+    // Fallback: try coercion
+    const coerced = Number(field);
+    return !isNaN(coerced) ? [coerced] : [];
+  } catch (err) {
+    console.error("Error parsing amenities:", err);
+    return [];
+  }
 }
 
 export const POST = async (req: Request) => {
@@ -72,7 +136,6 @@ export const POST = async (req: Request) => {
     const featured = getField<string | boolean>(fields.featured);
     const status = getField<string>(fields.status);
     const admin_id = getField<string>(fields.admin_id);
-    const amenities = fields.amenities;
     const keyword = getField<string>(fields.keyword);
 
     // Validation
@@ -80,7 +143,7 @@ export const POST = async (req: Request) => {
       return new Response(
         JSON.stringify({
           success: false,
-          message: "Missing required fields",
+          message: "Missing required fields: title, price, location, or address",
           data: null,
         }),
         { status: 400 }
@@ -113,72 +176,84 @@ export const POST = async (req: Request) => {
         },
       });
     } catch (err: any) {
-      if (err.code === "P2002" && err.meta?.target?.includes("slug")) {
-        return new Response(JSON.stringify(
-          { success: false, message: "Slug already exists. Please use a different title.", data: null }),
+      // Prisma unique constraint error for slug
+      if (err?.code === "P2002" && err?.meta?.target?.includes("slug")) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            message: "Slug already exists. Please use a different title/slug.",
+            data: null,
+          }),
           { status: 400 }
         );
       }
-      throw err; // rethrow other errors
+      console.error("Prisma create error:", err);
+      throw err;
     }
 
     // Save amenities
-    if (amenities) {
-      let amenityIds: number[] = [];
-
+    const amenityIds = parseAmenityField(fields.amenities);
+    if (amenityIds.length > 0) {
       try {
-        if (typeof amenities === "string") {
-          amenityIds = JSON.parse(amenities).map((id: any) => Number(id));
-        } else if (Array.isArray(amenities)) {
-          amenityIds = amenities.flatMap((val: any) => {
-            if (typeof val === "string" && val.startsWith("[")) {
-              return JSON.parse(val).map((id: any) => Number(id));
-            }
-            return Number(val);
-          });
-        }
-      } catch (parseErr) {
-        console.error("Error parsing amenities:", parseErr);
-      }
-
-      // Filter out NaN
-      amenityIds = amenityIds.filter((id) => !isNaN(id));
-
-      if (amenityIds.length > 0) {
         await prisma.property_Amenities.createMany({
           data: amenityIds.map((id) => ({
             property_id: newProperty.id,
             amenity_id: id,
           })),
+          skipDuplicates: true,
         });
+      } catch (err) {
+        console.error("Error saving amenities:", err);
       }
     }
 
     // Handle images
-    if (files.images) {
-      const propertyDir = path.join(uploadDir, `properties/${newProperty.id}`);
+    if (files?.images) {
+      // Ensure property-specific dir
+      const propertyDir = path.join(uploadDir, "properties", String(newProperty.id));
       if (!fs.existsSync(propertyDir)) fs.mkdirSync(propertyDir, { recursive: true });
 
+      // Normalize to array
       const imageFiles = Array.isArray(files.images) ? files.images : [files.images];
+
       const imageData = imageFiles.map((file: any, index: number) => {
-        const fileExt = path.extname(file.originalFilename || file.filepath);
+        // formidable v2 uses file.filepath and file.originalFilename (or newFilename). Be defensive.
+        const uploadedPath = file.filepath || file.file?.filepath || file.path;
+        const originalName = file.originalFilename || file.originalname || file.newFilename || "image";
+        const fileExt = path.extname(originalName) || path.extname(uploadedPath) || ".jpg";
         const fileName = `${Date.now()}_${index}${fileExt}`;
         const destPath = path.join(propertyDir, fileName);
+
         try {
-          fs.renameSync(file.filepath, destPath);
+          // Move from temp location to property folder
+          if (uploadedPath && fs.existsSync(uploadedPath)) {
+            fs.renameSync(uploadedPath, destPath);
+          } else if (file.filepath) {
+            // final fallback - try rename
+            fs.renameSync(file.filepath, destPath);
+          } else {
+            // If file not found on disk, skip it (shouldn't happen normally)
+            console.warn("Uploaded file path not found; skipping file:", file);
+            return null;
+          }
         } catch (moveErr) {
           console.error("File move error:", moveErr);
+          return null;
         }
 
         return {
           property_id: newProperty.id,
           image_url: `/uploads/properties/${newProperty.id}/${fileName}`,
-          is_primary: index === 0
+          is_primary: index === 0,
         };
-      });
+      }).filter(Boolean); // remove any nulls
 
       if (imageData.length > 0) {
-        await prisma.property_Image.createMany({ data: imageData });
+        try {
+          await prisma.property_Image.createMany({ data: imageData });
+        } catch (imgErr) {
+          console.error("Error saving image records:", imgErr);
+        }
       }
     }
 
@@ -199,7 +274,7 @@ export const POST = async (req: Request) => {
     }), { status: 201 });
 
   } catch (error) {
-    console.error(error);
+    console.error("Error while adding property:", error);
     return new Response(JSON.stringify({
       success: false,
       message: "Internal server error",

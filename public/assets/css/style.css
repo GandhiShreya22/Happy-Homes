@@ -3385,7 +3385,6 @@ button:focus {
 }
 
 .form-control {
-  border-color: var(--input-border);
   color: var(--gray-900);
   background-color: var(--form-bg);
   font-size: 14px;
@@ -3396,6 +3395,7 @@ button:focus {
   min-height: 38px;
   transition: all 0.5s;
   border: 1px solid;
+  border-color: var(--border-color);
 }
 .form-control:focus {
   box-shadow: none;
@@ -4998,6 +4998,9 @@ span.select2-container.select2-container--default.select2-container--open {
 .features-section .feature-slider-item .features-slide-card {
   margin: 0px 12px;
 }
+.features-slide-card img {
+  object-fit: cover;
+}
 @media (max-width: 575.98px) {
   .features-section .feature-slider-item {
     margin-bottom: 0px;
@@ -5258,6 +5261,8 @@ span.select2-container.select2-container--default.select2-container--open {
   border-radius: 10px;
   transition: 0.5s;
   transform: scale(1);
+  width: 416px;
+  height: 552px;
 }
 
 .partners-section .partners-slide {
@@ -7557,6 +7562,12 @@ span.select2-container.select2-container--default.select2-container--open {
   background-color: var(--white);
   box-shadow: 0px 0px 24px 0px rgba(197, 197, 197, 0.2509803922);
 }
+.search-item .react-select__control {
+  border-color: var(--input-border);
+  color: var(--gray-900) !important;
+  background-color: var(--form-bg);
+  border-color: var(--border-color);
+}
 .search-item p {
   color: var(--gray-500);
 }
@@ -8479,6 +8490,9 @@ span.select2-container.select2-container--default.select2-container--open {
   padding: 10px 20px;
   border-bottom: 1px solid var(--gray-100);
 }
+.filter-sidebar .reset-filters {
+  cursor: pointer;
+}
 .filter-sidebar .filter-body .filter-set {
   padding: 20px;
   border-bottom: 1px solid var(--gray-100);
@@ -8541,6 +8555,7 @@ span.select2-container.select2-container--default.select2-container--open {
 }
 .property-listing-item .buy-grid-img img {
   transition: 0.5s all;
+  object-fit: cover;
 }
 .property-listing-item .buy-grid-img:hover img {
   transform: scale(1.14);

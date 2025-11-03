@@ -1,76 +1,112 @@
 "use client";
 
 import { defaultErrMsg } from "@/src/utils/constants";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import ReactSelect from "react-select";
+import { useRouter } from "next/navigation";
+import { usePropertyData } from "@/src/hooks/usePropertyData";
 
 export default function FilterSidebar({
   onApply,
 }: {
   onApply: (filters: any) => void;
 }) {
-  const [categories, setCategories] = useState<any[]>([]);
-  const [amenities, setAmenities] = useState<any[]>([]);
-  const [keywords, setKeywords] = useState<any[]>([]);
+  const router = useRouter();
+  const { keywords, categories, amenities, loading, error } = usePropertyData();
   const [filters, setFilters] = useState({
     search: "",
     location: "",
     bedrooms: "",
     bathrooms: "",
-    minSqft: 0,
+    minSqft: "",
     category: [] as number[],
     amenities: [] as number[],
-    keywords: null as number | null,
-    minPrice: 0,
-    maxPrice: 0,
+    keyword: null as number | null,
+    minPrice: "",
+    maxPrice: "",
   });
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const urlParams = new URLSearchParams(window.location.search);
+  // Parse filters from URL params
+  const parseFiltersFromURL = () => {
+    if (typeof window === "undefined") return null;
 
-      const filtersObj = {
-        search: urlParams.get("search") || "",
-        location: urlParams.get("location") || "",
-        bedrooms: urlParams.get("bedrooms") || "",
-        bathrooms: urlParams.get("bathrooms") || "",
-        minSqft: urlParams.get("minSqft") || 0,
-        category: urlParams.get("category") || [],
-        amenities: urlParams.get("amenities") || [],
-        keywords: urlParams.get("keywords")
-          ? parseInt(urlParams.get("keywords")!)
-          : null,
-        minPrice: urlParams.get("minPrice") || 0,
-        maxPrice: urlParams.get("maxPrice") || 0,
-      };
-      setFilters(filtersObj as any);
-      onApply(filtersObj);
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // Parse category - can be propertyType (single value) or property_catg_ids (JSON array)
+    let category: number[] = [];
+    const propertyTypeParam = urlParams.get("propertyType");
+    if (propertyTypeParam) {
+      // Single value - convert to array
+      const propTypeId = Number(propertyTypeParam);
+      if (!isNaN(propTypeId)) {
+        category = [propTypeId];
+      }
+    } else {
+      // Try property_catg_ids (JSON array)
+      const categoryParam = urlParams.get("property_catg_ids");
+      if (categoryParam) {
+        try {
+          category = JSON.parse(categoryParam).map(Number);
+        } catch {
+          category = [];
+        }
+      }
     }
+
+    // Parse amenities - API sends as JSON array string
+    let amenities: number[] = [];
+    const amenitiesParam = urlParams.get("amenities");
+    if (amenitiesParam) {
+      try {
+        amenities = JSON.parse(amenitiesParam).map(Number);
+      } catch {
+        // Fallback: try as single value
+        const singleAmenity = Number(amenitiesParam);
+        if (!isNaN(singleAmenity)) {
+          amenities = [singleAmenity];
+        }
+      }
+    }
+
+    const filtersObj = {
+      search: urlParams.get("search") || "",
+      location: urlParams.get("location") || "",
+      bedrooms: urlParams.get("bedrooms") || "",
+      bathrooms: urlParams.get("bathrooms") || "",
+      minSqft: urlParams.get("minSqft") || "",
+      category: category,
+      amenities: amenities,
+      keyword: urlParams.get("keyword")
+        ? Number(urlParams.get("keyword"))
+        : null,
+      minPrice: urlParams.get("minPrice") || "",
+      maxPrice: urlParams.get("maxPrice") || "",
+    };
+
+    return filtersObj;
+  };
+
+  // Initialize filters from URL params on initial load only
+  useEffect(() => {
+    if (!isInitialized && typeof window !== "undefined") {
+      const urlFilters = parseFiltersFromURL();
+      if (urlFilters) {
+        setFilters(urlFilters);
+        onApply(urlFilters);
+      }
+      setIsInitialized(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Fetch categories & amenities
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [catRes, amRes, kwRes] = await Promise.all([
-          fetch("/api/categories"),
-          fetch("/api/amenities"),
-          fetch("/api/keywords"),
-        ]);
-        const catData = await catRes.json();
-        const amData = await amRes.json();
-        const kwData = await kwRes.json();
-        if (catData.success) setCategories(catData.data);
-        if (amData.success) setAmenities(amData.data);
-        if (kwData.success) setKeywords(kwData.data);
-      } catch (err) {
-        toast.error(defaultErrMsg);
+    if (error) {
+        toast.error(error);
       }
-    };
-    fetchData();
-  }, []);
+  }, [error]);
 
   // Handle checkbox toggle
   const toggleSelection = (field: "category" | "amenities", id: number) => {
@@ -97,30 +133,41 @@ export default function FilterSidebar({
   const handleKeywordChange = (selectedOption: any) => {
     setFilters((prev) => ({
       ...prev,
-      keywords: selectedOption ? selectedOption.value : null,
+      keyword: selectedOption ? selectedOption.value : null,
     }));
   };
 
   const handleApply = () => {
+    clearQueryParams();
     onApply(filters);
   };
 
   // Reset filters
   const resetFilters = () => {
-    setFilters({
+    const resetFiltersObj = {
       search: "",
       location: "",
       bedrooms: "",
       bathrooms: "",
-      minSqft: 0,
-      minPrice: 0,
-      maxPrice: 0,
+      minSqft: "",
+      minPrice: "",
+      maxPrice: "",
       category: [],
       amenities: [],
-      keywords: null,
-    });
-
+      keyword: null,
+    };
+    setFilters(resetFiltersObj);
+    // Clear URL params
+    clearQueryParams();
     onApply({});
+  };
+
+  // Clear query params
+  const clearQueryParams = () => {
+    if (typeof window !== "undefined") {
+      const newUrl = window.location.pathname;
+      router.push(newUrl, { scroll: false });
+    }
   };
 
   return (
@@ -241,15 +288,16 @@ export default function FilterSidebar({
                   label: keyword.name,
                 }))}
                 value={
-                  keywords.find((keyword) => keyword.id === filters.keywords)
+                  filters.keyword && keywords.find((keyword) => keyword.id === filters.keyword)
                     ? {
-                        value: filters.keywords!,
+                        value: filters.keyword,
                         label: keywords.find(
-                          (keyword) => keyword.id === filters.keywords
+                          (keyword) => keyword.id === filters.keyword
                         )!.name,
                       }
                     : null
                 }
+                isLoading={loading}
                 onChange={handleKeywordChange}
                 placeholder="Select a keyword..."
                 isClearable={true}
@@ -322,8 +370,14 @@ export default function FilterSidebar({
             <i className="material-icons-outlined expand-arrow">expand_less</i>
           </div>
           <div id="category" className="card-collapse collapse show mt-3">
-            {categories.map((cat) => (
-              <div key={cat.id} className="form-check mb-2">
+          {loading ? (
+            <div>
+              <span className="spinner-border spinner-border-sm me-2"></span>
+              <span>Loading categories...</span>
+            </div>
+          ) : (
+            categories.map((cat) => (
+              <div key={`category-${cat.id}`} className="form-check mb-2">
                 <input
                   type="checkbox"
                   className="form-check-input"
@@ -338,7 +392,8 @@ export default function FilterSidebar({
                   {cat.name}
                 </label>
               </div>
-            ))}
+            ))
+          )}
           </div>
         </div>
 
@@ -363,8 +418,14 @@ export default function FilterSidebar({
               </i>
             </div>
             <div id="amenities" className="card-collapse collapse show mt-3">
-              {amenities.map((am) => (
-                <div key={am.id} className="form-check mb-2">
+            {loading ? (
+              <div>
+                <span className="spinner-border spinner-border-sm me-2"></span>
+                <span>Loading amenities...</span>
+              </div>
+            ) : (
+              amenities.map((am) => (
+                <div key={`amenity-${am.id}`} className="form-check mb-2">
                   <input
                     type="checkbox"
                     className="form-check-input"
@@ -379,7 +440,8 @@ export default function FilterSidebar({
                     {am.name}
                   </label>
                 </div>
-              ))}
+              ))
+            )}
             </div>
           </div>
         )}

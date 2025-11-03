@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 interface PropertyData {
   keywords: any[];
   categories: any[];
+  amenities: any[];
   loading: boolean;
   error: string | null;
 }
@@ -11,6 +12,7 @@ interface PropertyData {
 export function usePropertyData(): PropertyData {
   const [keywords, setKeywords] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+  const [amenities, setAmenities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,15 +22,17 @@ export function usePropertyData(): PropertyData {
         setLoading(true);
         setError(null);
 
-        // Fetch both keywords and categories in parallel
-        const [keywordsRes, categoriesRes] = await Promise.all([
+        // Fetch both keywords, categories and amenities in parallel
+        const [keywordsRes, categoriesRes, amenitiesRes] = await Promise.all([
           fetch("/api/keywords"),
-          fetch("/api/categories")
+          fetch("/api/categories"),
+          fetch("/api/amenities")
         ]);
 
-        const [keywordsData, categoriesData] = await Promise.all([
+        const [keywordsData, categoriesData, amenitiesData] = await Promise.all([
           keywordsRes.json(),
-          categoriesRes.json()
+          categoriesRes.json(),
+          amenitiesRes.json()
         ]);
 
         if (keywordsData.success) {
@@ -44,6 +48,13 @@ export function usePropertyData(): PropertyData {
           toast.error(categoriesData.message);
           setError(categoriesData.message);
         }
+
+        if (amenitiesData.success) {
+          setAmenities(amenitiesData.data);
+        } else {
+          toast.error(amenitiesData.message);
+          setError(amenitiesData.message);
+        }
       } catch (err) {
         const errorMessage = "Failed to fetch property data";
         toast.error(errorMessage);
@@ -56,5 +67,5 @@ export function usePropertyData(): PropertyData {
     fetchData();
   }, []);
 
-  return { keywords, categories, loading, error };
+  return { keywords, categories, amenities, loading, error };
 }

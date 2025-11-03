@@ -49,7 +49,7 @@ const navItems: NavItem[] = [
   },
   {
     icon: <InfoIcon />,
-    name: "Support Requests",
+    name: "Contact Enquiries",
     path: "/admin/support-requests"
   },
   // {
@@ -108,7 +108,7 @@ const AdminSidebar: React.FC = () => {
                   className={`ml-auto w-5 h-5 transition-transform duration-200 ${
                     openSubmenu?.type === menuType &&
                     openSubmenu?.index === index
-                      ? "rotate-180 text-indigo-500"
+                      ? "rotate-180 text-yellow-700"
                       : ""
                   }`}
                   fill="none"

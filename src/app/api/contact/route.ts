@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     return new Response(
       JSON.stringify({
         success: true,
-        message: "Message submitted successfully",
+        message: "Your message has been received. We'll reach out soon.",
         data: message,
       }),
       { status: 201 }

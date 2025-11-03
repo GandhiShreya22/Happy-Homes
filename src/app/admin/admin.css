@@ -38,18 +38,18 @@
   --color-white: #ffffff;
   --color-black: #101828;
 
-  --color-brand-25: #f2f7ff;
-  --color-brand-50: #ecf3ff;
-  --color-brand-100: #dde9ff;
-  --color-brand-200: #c2d6ff;
-  --color-brand-300: #9cb9ff;
-  --color-brand-400: #7592ff;
-  --color-brand-500: #465fff;
-  --color-brand-600: #3641f5;
-  --color-brand-700: #2a31d8;
-  --color-brand-800: #252dae;
-  --color-brand-900: #262e89;
-  --color-brand-950: #161950;
+  --color-brand-25: #fffaf2;
+  --color-brand-50: #fff3e0;
+  --color-brand-100: #ffe6b8;
+  --color-brand-200: #ffd98f;
+  --color-brand-300: #ffcb66;
+  --color-brand-400: #ffbb55;
+  --color-brand-500: #d89e48;
+  --color-brand-600: #c7a75d;
+  --color-brand-700: #a17f35;
+  --color-brand-800: #7a5f25;
+  --color-brand-900: #4f3c15;
+  --color-brand-950: #2a1f08;
 
   --color-blue-light-25: #f5fbff;
   --color-blue-light-50: #f0f9ff;
@@ -735,4 +735,16 @@ span.flatpickr-weekday,
     0 1px 2px 0 rgba(16, 24, 40, 0.06);
   opacity: 0.8;
   cursor: grabbing; /* Changes the cursor to indicate dragging */
+}
+
+/* React Data Table custom styles */
+.custom-datatable .rdt_TableHeadRow {
+  vertical-align: middle;
+  font-size: 16px;
+  font-weight: 600;
+}
+.custom-datatable .rdt_TableCell {
+  vertical-align: middle;
+  padding: 5px 16px;
+  font-size: 14px;
 }

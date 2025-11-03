@@ -27,6 +27,7 @@ export default function FeaturedRentSlider() {
 	const fetchProperties = async () => {
 		const res = await fetch("/api/active-properties?type=rent&featured=true&limit=8");
 		const data = await res.json();
+
 		if (data.success) {
 			setProperties(data.data.properties);
 		} else {
@@ -38,17 +39,11 @@ export default function FeaturedRentSlider() {
 		fetchProperties();
 	}, []);
 
-	// Split into slides, 2 cards per slide
-	const slides = [];
-	for (let i = 0; i < properties.length; i += 2) {
-		slides.push(properties.slice(i, i + 2));
-	}
-
 	return (
 		<Slider {...settings} className="feature-slider-item features-slider position-none">
-			{slides.map((slide, index) => (
+		{properties?.length > 0 ? (
+			properties.map((property, index) => (
 				<div className="features-slide-card" key={index}>
-					{slide.map((property) => (
 						<div
 							className="d-flex aos my-3 mx-2"
 							data-aos="fade-down"
@@ -57,9 +52,11 @@ export default function FeaturedRentSlider() {
 						>
 							<PropertyCard property={property} link="/property-details" />
 						</div>
-					))}
 				</div>
-			))}
+			))
+		) : (
+			<p className="text-center">No featured rent properties available.</p>
+		)}
 		</Slider>
 	);
 }

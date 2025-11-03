@@ -26,13 +26,13 @@ export default function PropertyCard({ property, link = "/property-details" }: {
   const detailPageLink = `${link}/${property.id}`;
 
   return (
-    <div className="col-12 d-flex">
+    <div className="col-6 d-flex">
       <div className="property-card flex-fill">
         <div className="property-listing-item p-0 mb-0 shadow-none">
           <div className="buy-grid-img mb-0 rounded-0">
             <Link href={detailPageLink}>
               <Image
-                className="img-fluid"
+                // className="img-fluid"
                 src={property?.images?.length ? property.images[0]?.image_url : "/assets/img/property/default-property.jpg"}
                 alt={property.title}
                 width={415}

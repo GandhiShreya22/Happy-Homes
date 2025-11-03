@@ -15,11 +15,12 @@ import Checkbox from "@/src/components/form-elements/Checkbox";
 import DropzoneComponent from "@/src/components/admin/Dropzone";
 import { defaultErrMsg, propertyTypes } from "@/src/utils/constants";
 import { CircleWhite } from "@/src/assets/icons";
+import { usePropertyData } from "@/src/hooks/usePropertyData";
 
 type PropertyFormValues = {
   title: string;
   slug: string;
-  property_catg_id: number;
+  property_catg_id: number | null;
   type: string;
   price: number;
   location: string;
@@ -32,7 +33,7 @@ type PropertyFormValues = {
   status: string;
   amenities: number[];
   images: File[];
-  keyword: number;
+  keyword: number | null;
 };
 
 function AddProperty() {
@@ -49,70 +50,85 @@ function AddProperty() {
     setValue,
   } = useForm<PropertyFormValues>({
     defaultValues: {
+      title: "",
+      slug: "",
+      property_catg_id: null,
+      type: "",
+      price: 0,
+      location: "",
+      address: "",
+      bedrooms: 0,
+      bathrooms: 0,
+      area_sqft: 0,
+      description: "",
       featured: false,
       status: "ACTIVE",
       amenities: [],
-      slug: "",
-      keyword: 0
+      images: [],
+      keyword: null,
     },
   });
 
+  const { keywords: initKeywords, categories: initCatg, amenities: initAmenities, loading, error } = usePropertyData();
+
+  const [loadProperty, setLoadProperty] = useState(false);
   const [categories, setCategories] = useState<{ value: number; label: string }[]>([]);
   const [amenities, setAmenities] = useState<{ value: number; label: string }[]>([]);
   const [keywords, setKeywords] = useState<{ value: number; label: string }[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [removedImages, setRemovedImages] = useState<string[]>([]);
 
   const titleValue = watch("title"); // watch the title field
 
   // Fetch existing categories & amenities
   useEffect(() => {
-    const fetchOptions = async () => {
-      try {
-        const [catRes, amenRes, keywRes] = await Promise.all([
-          fetch("/api/categories"),
-          fetch("/api/amenities"),
-          fetch("/api/keywords"),
-        ]);
-
-        const cats = await catRes.json();
-        const amens = await amenRes.json();
-        const keyw = await keywRes.json();
-
-        if (cats.success) {
-          setCategories(cats.data.map((c: any) => ({ value: c.id, label: c.name })));
-        } else {
-          toast.error(cats.message);
-        }
-        if (amens.success) {
-          setAmenities(amens.data.map((a: any) => ({ value: a.id, label: a.name })));
-        } else {
-          toast.error(amens.message);
-        }
-        if (keyw.success) {
-          setKeywords(keyw.data.map((k: any) => ({ value: k.id, label: k.name })))
-        } else {
-          toast.error(keyw.message);
-        }
-      } catch (err) {
-        console.error("Error fetching options:", err);
-        toast.error(defaultErrMsg);
-      }
-    };
-    fetchOptions();
-  }, []);
+    if (initAmenities?.length) {
+      setAmenities(initAmenities.map((a: any) => ({ value: a.id, label: a.name })));
+    }
+    if (initKeywords?.length) {
+      setKeywords(initKeywords.map((k: any) => ({ value: k.id, label: k.name })))
+    }
+    if (initCatg?.length) {
+      setCategories(initCatg.map((c: any) => ({ value: c.id, label: c.name })));
+    }
+    if (error) {
+      toast.error(error);
+    }
+  }, [initAmenities, initCatg, initKeywords, error]);
 
   useEffect(() => {
     if (propertyId) {
       (async () => {
         try {
-          const res = await fetch(`/api/admin/property/${propertyId}`);
+          setLoadProperty(true);
+          const res = await fetch(`/api/property/${propertyId}`);
           const result = await res.json();
           if (result.success) {
-            reset(result.data); // prefill form fields
+            const property = result.data;
+
+            // Extract amenity IDs safely (for multi-select prefill)
+            let amenityIds: number[] = [];
+            if (Array.isArray(property.amenitiesObj)) {
+              amenityIds = property.amenitiesObj.map(
+                (item: any) => item?.amenity?.id
+              );
+            }
+
+            setExistingImages(property.images || []); // prefill existing image URLs
+
+            // Reset form with merged values
+            reset({
+              ...property,
+              amenities: amenityIds, // override with IDs for react-select
+            });
+            setLoadProperty(false);
           } else {
             toast.error("Failed to load property details");
+            setLoadProperty(false);
           }
         } catch (err) {
           toast.error(defaultErrMsg);
+          setLoadProperty(false);
         }
       })();
     }
@@ -182,6 +198,10 @@ function AddProperty() {
     try {
       const formData = new FormData();
 
+      if (removedImages.length) {
+        formData.append("removedImages", JSON.stringify(removedImages));
+      }
+
       Object.entries(data).forEach(([key, value]) => {
         if (key === "images" && Array.isArray(value)) {
           value.forEach((file) => {
@@ -206,7 +226,7 @@ function AddProperty() {
       if (result.success) {
         toast.success(result.message || "Property added successfully!");
         reset();
-        router.push("/admin/properties");
+        router.replace("/admin/properties");
       } else {
         toast.error(result.message);
       }
@@ -214,6 +234,8 @@ function AddProperty() {
       toast.error(defaultErrMsg);
     }
   };
+
+  if (loadProperty) return <div className="p-6 text-center text-gray-500 dark:text-gray-400">Loading property details...</div>;
 
   return (
     <div>
@@ -308,6 +330,7 @@ function AddProperty() {
                   <CreatableSelect
                     {...field}
                     isClearable
+                    isLoading={loading}
                     options={categories}
                     value={categories.find((opt) => opt.value == field.value) || null}
                     onChange={(val) => field.onChange(val ? val.value : null)}
@@ -357,16 +380,16 @@ function AddProperty() {
             {/* Location */}
             <div>
               <Label>
-                Location <span className="text-red-500">*</span>
+                Location (City/Town) <span className="text-red-500">*</span>
               </Label>
               <Controller
                 name="location"
                 control={control}
-                rules={{ required: "Location is required" }}
+                rules={{ required: "Location(City/Town) is required" }}
                 render={({ field }) => (
                   <Input
                     {...field}
-                    placeholder="Enter location of the property"
+                    placeholder="Enter location(City/Town) of the property"
                   />
                 )}
               />
@@ -505,6 +528,7 @@ function AddProperty() {
                   <Select
                     {...field}
                     isClearable
+                    isLoading={loading}
                     options={keywords}
                     value={keywords.find((opt) => opt.value == field.value) || null}
                     onChange={(val) => field.onChange(val ? val.value : null)}
@@ -533,6 +557,7 @@ function AddProperty() {
                   classNamePrefix="custom-select"
                   isClearable
                   isMulti
+                  isLoading={loading}
                   options={amenities}
                   value={amenities.filter((opt) =>
                     field.value?.includes(opt.value)
@@ -574,6 +599,11 @@ function AddProperty() {
                     "image/png": [],
                     "image/jpeg": [],
                     "image/webp": [],
+                  }}
+                  // for edit mode
+                  existingImages={existingImages}
+                  onRemoveExisting={(url) => {
+                    setRemovedImages((prev) => [...prev, url]);
                   }}
                 />
               )}
@@ -619,10 +649,15 @@ function AddProperty() {
         {/* Submit button */}
         <button
           type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-400"
           disabled={isSubmitting}
         >
-          {isSubmitting && <span className="animate-spin"><CircleWhite /></span>} Save
+          {isSubmitting && (
+            <span className="animate-spin">
+              <CircleWhite />
+            </span>
+          )}
+          Save
         </button>
       </form>
     </div>

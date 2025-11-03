@@ -1,4 +1,28 @@
-export default function TopFilterBar() {
+interface TopFilterBarProps {
+  sortBy?: string;
+  priceRange?: string;
+  onSortChange?: (sortBy: string) => void;
+  onPriceRangeChange?: (priceRange: string) => void;
+}
+
+export default function TopFilterBar({ 
+  sortBy = "0", 
+  priceRange = "",
+  onSortChange,
+  onPriceRangeChange 
+}: TopFilterBarProps) {
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    if (onSortChange) {
+      onSortChange(e.target.value);
+    }
+  };
+
+  const handlePriceRangeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    if (onPriceRangeChange) {
+      onPriceRangeChange(e.target.value);
+    }
+  };
+
   return (
     <div className="card border-0 search-item mb-4">
       <div className="card-body">
@@ -18,11 +42,10 @@ export default function TopFilterBar() {
               <div className="result-list d-flex flex-lg-row flex-md-row flex-column align-items-center gap-2">
                 <h5>Sort By</h5>
                 <div className="result-select">
-                  <select className="select">
-                    <option value="0">Default</option>
+                  <select className="select" value={sortBy} onChange={handleSortChange}>
                     <option value="1">A-Z</option>
-                    <option value="2">Newest</option>
-                    <option value="3">Oldest</option>
+                    <option value="0">Newest</option>
+                    <option value="2">Oldest</option>
                   </select>
                 </div>
               </div>
@@ -31,9 +54,10 @@ export default function TopFilterBar() {
               <div className="result-list d-flex flex-lg-row flex-md-row flex-column align-items-center gap-2">
                 <h5>Price Range</h5>
                 <div className="result-select">
-                  <select className="select">
-                    <option>Low to High</option>
-                    <option>High to Low</option>
+                  <select className="select" value={priceRange} onChange={handlePriceRangeChange}>
+                    <option value="">None</option>
+                    <option value="low-high">Low to High</option>
+                    <option value="high-low">High to Low</option>
                   </select>
                 </div>
               </div>

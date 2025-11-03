@@ -156,7 +156,7 @@ const AdminHeader: React.FC = () => {
           </div>
           <div className="relative">
             <button className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-              <div className="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center">
+              <div className="h-8 w-8 rounded-full bg-yellow-600 flex items-center justify-center">
                 <span className="text-white text-sm font-medium">A</span>
               </div>
               <span className="ml-2 text-gray-700">Admin</span>

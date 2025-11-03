@@ -41,6 +41,7 @@ export async function GET(req: NextRequest, context: any) {
           ...property,
           images: imageUrls,
           amenities: amenityNames,
+          amenitiesObj: property.amenities, // entire amenities object
         },
         message: "Fetched single property successfully"
       }),

@@ -1,22 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Select from "react-select";
 
 interface PropertySearchFormProps {
   keywords: any[];
   categories: any[];
+  keyCatgLoading: boolean;
   onSubmit?: (formData: any) => void;
   type: "buy" | "rent";
 }
 
-export default function PropertySearchForm({ keywords, categories, onSubmit }: PropertySearchFormProps) {
+export default function PropertySearchForm({ keywords, categories, keyCatgLoading, onSubmit, type }: PropertySearchFormProps) {
   const [formData, setFormData] = useState({
     keyword: "",
     propertyType: "",
     location: "",
     minPrice: "",
-    maxPrice: ""
+    maxPrice: "",
+    type: type
   });
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -28,7 +37,8 @@ export default function PropertySearchForm({ keywords, categories, onSubmit }: P
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit?.({ ...formData, type: (PropertySearchForm as any).type });
+    console.log("e.target:", formData)
+    onSubmit?.(formData);
   };
 
   return (
@@ -37,32 +47,62 @@ export default function PropertySearchForm({ keywords, categories, onSubmit }: P
         <div className="d-flex align-items-bottom flex-wrap flex-lg-nowrap gap-3">
           <div className="flex-fill select-field w-100">
             <label className="form-label">Keyword</label>
-            <select 
-              className="select" 
-              name="keyword"
-              value={formData.keyword}
-              onChange={handleInputChange}
-            >
-              <option value="">Select</option>
-              {keywords.map((keyword) => (
-                <option key={keyword.id} value={keyword.id}>{keyword.name}</option>
-              ))}
-            </select>
+            <Select
+              options={keywords.map((k) => ({ value: k.id, label: k.name }))}
+              onChange={(option) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  keyword: option?.value || "",
+                }))
+              }
+              value={
+                keywords.find((k) => k.id === formData.keyword)
+                  ? {
+                      value: formData.keyword,
+                      label: keywords.find((k) => k.id === formData.keyword)
+                        ?.name,
+                    }
+                  : null
+              }
+              placeholder="Select keyword..."
+              classNamePrefix="react-select"
+              isLoading={keyCatgLoading}
+              menuPortalTarget={mounted ? document.body : null}
+              menuPosition="fixed"
+              styles={{
+                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+              }}
+            />
           </div>
           
           <div className="flex-fill select-field w-100">
             <label className="form-label">Property Type</label>
-            <select 
-              className="select" 
-              name="propertyType"
-              value={formData.propertyType}
-              onChange={handleInputChange}
-            >
-              <option value="">Select</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>{category.name}</option>
-              ))}
-            </select>
+            <Select
+              options={categories.map((c) => ({ value: c.id, label: c.name }))}
+              onChange={(option) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  propertyType: option?.value || "",
+                }))
+              }
+              value={
+                categories.find((c) => c.id === formData.propertyType)
+                  ? {
+                      value: formData.propertyType,
+                      label: categories.find((c) => c.id === formData.propertyType)
+                        ?.name,
+                    }
+                  : null
+              }
+              placeholder="Select type..."
+              classNamePrefix="react-select"
+              isLoading={keyCatgLoading}
+              menuPortalTarget={mounted ? document.body : null}
+              menuPosition="fixed"
+              styles={{
+                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+              }}
+            />
           </div>
           
           <div className="flex-fill select-field w-100">

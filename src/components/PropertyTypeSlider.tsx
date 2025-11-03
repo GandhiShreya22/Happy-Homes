@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { defaultErrMsg } from "../utils/constants";
 import { PropertyCategory } from "../data/featuredProperties";
+import Link from "next/link";
 
 const imgArr = [
 	"/assets/img/home/home.png",
@@ -64,6 +65,7 @@ export default function PropertyTypeSlider() {
 					data-aos="fade-up"
 					data-aos-duration="1000"
 				>
+					<Link href={`/buy-property?propertyType=${String(catg.id)}`}>
 					<div className="property-card-item mx-2">
 						<div className="mb-3 text-center">
 							<img src={getImageForCategory(i)} alt={`property-icon-${i + 1}`} className="m-auto" />
@@ -71,6 +73,7 @@ export default function PropertyTypeSlider() {
 						<h5 className="mb-1"> {catg.name} </h5>
 						{/* <p className="mb-0"> 30 Properties</p> */}
 					</div>
+					</Link>
 				</div>
 			))}
 		</Slider>

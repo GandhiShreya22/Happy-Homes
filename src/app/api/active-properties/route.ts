@@ -6,7 +6,8 @@ export async function GET(req: Request) {
     const url = new URL(req.url);
     const search = url.searchParams.get("search");
     const property_type = url.searchParams.get("type");
-    const property_catg_ids = url.searchParams.get("property_catg_ids"); // <-- updated
+    const property_catg_ids = url.searchParams.get("property_catg_ids");
+    const keyword_id = url.searchParams.get("keyword");
     const amenitiesParam = url.searchParams.get("amenities");
     const location = url.searchParams.get("location");
     const bedrooms = url.searchParams.get("bedrooms");
@@ -18,6 +19,8 @@ export async function GET(req: Request) {
 
     const page = Number(url.searchParams.get("page") || "1");
     const limit = Number(url.searchParams.get("limit") || "10");
+    const sortBy = url.searchParams.get("sortBy");
+    const priceRange = url.searchParams.get("priceRange");
 
     const where: any = { status: "ACTIVE" }; // only active properties
 
@@ -25,8 +28,8 @@ export async function GET(req: Request) {
     if (featured !== null) where.featured = featured === "true";
     if (search) {
       where.OR = [
-        { title: { contains: search, mode: "insensitive" } },
-        { description: { contains: search, mode: "insensitive" } },
+        { title: { contains: search } },
+        { description: { contains: search } },
       ];
     }
     
@@ -38,23 +41,54 @@ export async function GET(req: Request) {
       }
     }
 
+    // Keyword filter - single keyword ID
+    if (keyword_id) {
+      where.keyword_id = Number(keyword_id);
+    }
+
     // Location filter
     if (location) {
-      where.location = { contains: location, mode: "insensitive" };
+      where.location = { contains: location };
     }
 
     // Bedrooms & Bathrooms
     if (bedrooms) where.bedrooms = Number(bedrooms);
     if (bathrooms) where.bathrooms = Number(bathrooms);
 
-    // Min Sqft
-    if (minSqft) where.sqft = { gte: Number(minSqft) };
+    // Min Sqft - using area_sqft as per schema
+    if (minSqft) where.area_sqft = { gte: Number(minSqft) };
 
     // Price range
     if (minPrice || maxPrice) {
       where.price = {};
       if (minPrice) where.price.gte = Number(minPrice);
       if (maxPrice) where.price.lte = Number(maxPrice);
+    }
+
+    // Determine orderBy based on sort parameters
+    // Price range takes priority over sortBy
+    let orderBy: any = { created_at: "desc" }; // default
+
+    if (priceRange) {
+      if (priceRange === "low-high") {
+        orderBy = { price: "asc" };
+      } else if (priceRange === "high-low") {
+        orderBy = { price: "desc" };
+      }
+    } else if (sortBy) {
+      switch (sortBy) {
+        case "0": // Default - newest first
+          orderBy = { created_at: "desc" };
+          break;
+        case "1": // A-Z
+          orderBy = { title: "asc" };
+          break;
+        case "2": // Oldest
+          orderBy = { created_at: "asc" };
+          break;
+        default:
+          orderBy = { created_at: "desc" };
+      }
     }
 
     // Fetch properties
@@ -66,7 +100,7 @@ export async function GET(req: Request) {
         property_category: true,
         admin: true,
       },
-      orderBy: { created_at: "desc" },
+      orderBy,
       skip: (page - 1) * limit,
       take: limit,
     });

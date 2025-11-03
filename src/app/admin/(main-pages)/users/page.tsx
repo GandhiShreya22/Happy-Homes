@@ -1,8 +1,9 @@
 "use client";
 
 import PageBreadcrumb from "@/src/components/admin/common/PageBreadCrumb";
+import { formatDateToGB } from "@/src/utils/helpers";
 import React, { useEffect, useState } from "react";
-import DataTable, { TableColumn } from "react-data-table-component";
+import DataTable from "react-data-table-component";
 
 interface Lead {
   id: number;
@@ -47,23 +48,22 @@ export default function UserListing() {
 
   const columns = [
     {
-      name: "ID",
-      selector: (row: Lead) => row.id,
-      sortable: true,
-      width: "70px",
-    },
-    {
       name: "Name",
       selector: (row: Lead) => row.name,
       sortable: true,
+      maxWidth: "140px",
     },
     {
       name: "Email",
       selector: (row: Lead) => row.email,
+      minWidth: "150px",
+      sortable: true,
     },
     {
       name: "Phone",
       selector: (row: Lead) => row.phone,
+      sortable: true,
+      maxWidth: "125px",
     },
     {
       name: "Property",
@@ -72,13 +72,18 @@ export default function UserListing() {
     },
     {
       name: "Submitted At",
-      selector: (row: Lead) => new Date(row.submitted_at).toLocaleString(),
+      selector: (row: Lead) => row.submitted_at,
+      cell: (row: Lead) => row.submitted_at ?
+        formatDateToGB(row.submitted_at)
+        : "-",
       sortable: true,
+      maxWidth: "130px",
     },
     {
       name: "Message",
       selector: (row: Lead) => row.message || "-",
       wrap: true,
+      minWidth: "230px",
     },
   ];
 
@@ -87,6 +92,7 @@ export default function UserListing() {
       <PageBreadcrumb pageTitle="Users List" />
       <div className="bg-white shadow rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700 p-4">
         <DataTable
+          className="custom-datatable"
           columns={columns}
           data={leads}
           progressPending={loading}

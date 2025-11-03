@@ -11,7 +11,7 @@ export async function PATCH(req: Request) {
       return new Response(
         JSON.stringify({
           success: false,
-          message: "Invalid property_id or status",
+          message: "Invalid property ID or status",
           data: null,
         }),
         { status: 400 }
@@ -25,7 +25,7 @@ export async function PATCH(req: Request) {
       include: {
         images: true,
         amenities: { include: { amenity: true } },
-        property_type: true,
+        property_category: true,
         admin: true,
       },
     });

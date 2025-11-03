@@ -53,6 +53,7 @@ export default function HomePage() {
                 <PropertySearchForm
                   keywords={keywords}
                   categories={categories}
+                  keyCatgLoading={loading}
                   onSubmit={handleSearchSubmit}
                   type="buy"
                 />
@@ -62,6 +63,7 @@ export default function HomePage() {
                 <PropertySearchForm
                   keywords={keywords}
                   categories={categories}
+                  keyCatgLoading={loading}
                   onSubmit={handleSearchSubmit}
                   type="rent"
                 />
@@ -79,7 +81,7 @@ export default function HomePage() {
               <span className="sec-line1"></span>
               <span className="sec-line2"></span>
             </div>
-            <p className="mb-0 text-center">Discover, choose, and inquire — all in 3 easy steps.</p>
+            <p className="mb-0 text-center">Discover, choose, and inquire - all in 3 easy steps.</p>
           </div>
           <div className="row">
             <div className="col-lg-4 d-flex aos" data-aos="fade-up" data-aos-duration="500">
@@ -97,7 +99,7 @@ export default function HomePage() {
                   <img src="/assets/img/home/icons/work-icon-2.svg" alt="icon" />
                 </div>
                 <h5 className="mb-3">02. Select Property Type</h5>
-                <p className="mb-0">Choose from a wide range of property options — apartments, villas, plots, or commercial spaces. Filter by type, budget, and amenities to find your perfect match.</p>
+                <p className="mb-0">Choose from a wide range of property options - apartments, villas, plots, or commercial spaces. Filter by type, budget, and amenities to find your perfect match.</p>
               </div>
             </div>
             <div className="col-lg-4 d-flex aos" data-aos="fade-up" data-aos-duration="500">
@@ -243,7 +245,7 @@ export default function HomePage() {
                 <div className="img-card overflow-hidden text-center">
                   <a>
                     <img
-                      src="/assets/img/home/city/property-img-3.jpg"
+                      src="/assets/img/home/city/property-img-1.jpg"
                       alt="Lease Buy Sell Investment"
                       className="img-fluid"
                     />
@@ -265,7 +267,7 @@ export default function HomePage() {
                 <div className="img-card overflow-hidden text-center">
                   <a>
                     <img
-                      src="/assets/img/home/city/property-img-3.jpg"
+                      src="/assets/img/home/city/property-img-2.jpg"
                       alt="Housing Management"
                       className="img-fluid"
                     />
@@ -309,7 +311,7 @@ export default function HomePage() {
 
           {/* start title */}
           <div className="section-heading aos" data-aos="fade-down" data-aos-duration="1000">
-            <h2 className="mb-2 text-center">Find your perfect place — Buy, Sell & Rent properties with ease.</h2>
+            <h2 className="mb-2 text-center">Find your perfect place - Buy, Sell & Rent properties with ease.</h2>
             <div className="sec-line">
               <span className="sec-line1"></span>
               <span className="sec-line2"></span>
@@ -369,8 +371,7 @@ export default function HomePage() {
               <div className="card mb-0">
                 <div className="card-body">
                   {faqGroups.map((group, idx) => (
-                    <div key={group.title}>
-                      <h5 className={`mb-4 ${idx > 0 ? "mt-4" : ""}`}>{group.title}</h5>
+                    <div key={`faq-group-${idx}`}>
                       <FAQAccordion groupId={`faq-accordion-${idx}`} faqs={group.items} />
                     </div>
                   ))}

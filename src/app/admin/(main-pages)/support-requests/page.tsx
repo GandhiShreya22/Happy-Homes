@@ -44,6 +44,7 @@ export default function ContactMessagesAdmin() {
     <div>
       <PageBreadcrumb pageTitle="Support Requests" />
       <DataTable
+        className="custom-datatable"
         columns={columns}
         data={messages}
         progressPending={loading}

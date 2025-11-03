@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
 interface DropzoneProps {
@@ -9,6 +9,8 @@ interface DropzoneProps {
   maxSize?: number; // in bytes
   accept?: Record<string, string[]>;
   multiple?: boolean;
+  existingImages?: string[]; // backend URLs
+  onRemoveExisting?: (url: string) => void; // to notify parent
 }
 
 export default function DropzoneComponent({
@@ -19,12 +21,22 @@ export default function DropzoneComponent({
     "image/png": [],
     "image/jpeg": [],
     "image/webp": [],
-    "image/svg+xml": [],
   },
   multiple = true,
+  existingImages = [],
+  onRemoveExisting,
 }: DropzoneProps) {
   const [files, setFiles] = useState<File[]>([]);
+  const [existing, setExisting] = useState<string[]>([]);
 
+  // initialize existing images
+  useEffect(() => {
+    if (existingImages?.length) {
+      setExisting(existingImages);
+    }
+  }, [existingImages]);
+
+  // handle new file drop
   const handleDrop = useCallback(
     (acceptedFiles: File[]) => {
       let newFiles = multiple ? [...files, ...acceptedFiles] : acceptedFiles;
@@ -45,10 +57,18 @@ export default function DropzoneComponent({
     maxSize,
   });
 
+  // remove new file
   const removeFile = (index: number) => {
     const newFiles = files.filter((_, i) => i !== index);
     setFiles(newFiles);
     onDrop(newFiles);
+  };
+
+  // remove existing file
+  const removeExisting = (url: string) => {
+    const updated = existing.filter((img) => img !== url);
+    setExisting(updated);
+    if (onRemoveExisting) onRemoveExisting(url); // notify parent
   };
 
   return (
@@ -90,6 +110,28 @@ export default function DropzoneComponent({
       </div>
 
       {/* Preview uploaded files */}
+      {existing.length > 0 && (
+        <div className="mt-4 grid grid-cols-4 gap-4">
+          {existing.map((url, index) => (
+            <div key={index} className="relative group border p-1 rounded">
+              <img
+                src={url}
+                alt="Existing"
+                className="h-20 w-full object-cover rounded"
+              />
+              <button
+                type="button"
+                onClick={() => removeExisting(url)}
+                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* New uploaded previews */}
       {files.length > 0 && (
         <div className="mt-4 grid grid-cols-4 gap-4">
           {files.map((file, index) => (
