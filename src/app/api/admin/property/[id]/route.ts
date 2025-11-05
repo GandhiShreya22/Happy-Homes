@@ -7,6 +7,7 @@ import fs from "fs";
 import path from "path";
 import { Readable } from "node:stream";
 import { IncomingMessage } from "http";
+import { getUploadDir } from "@/lib/getUploadDir";
 
 export const config = {
   api: {
@@ -14,7 +15,8 @@ export const config = {
   },
 };
 
-const UPLOAD_ROOT = path.join(process.cwd(), "public", "uploads");
+// const UPLOAD_ROOT = path.join(process.cwd(), "public", "uploads");
+const UPLOAD_ROOT = getUploadDir();
 if (!fs.existsSync(UPLOAD_ROOT)) fs.mkdirSync(UPLOAD_ROOT, { recursive: true });
 
 /** Convert Next.js Request -> IncomingMessage for formidable */

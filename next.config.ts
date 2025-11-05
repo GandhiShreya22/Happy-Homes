@@ -11,6 +11,16 @@ const nextConfig: NextConfig = {
     // !! WARN !!
     ignoreBuildErrors: true,
   },
+  // Allow Next.js Image Optimization for your Hostinger domain uploads
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "www.happyhomes.co.in", // your actual domain
+        pathname: "/uploads/**",           // allow images under /uploads/
+      },
+    ],
+  },
   // Fallback for regular webpack (if not using turbopack)
   webpack(config) {
     config.module.rules.push({

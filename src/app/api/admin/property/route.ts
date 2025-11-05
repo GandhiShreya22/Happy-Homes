@@ -7,6 +7,7 @@ import { IncomingMessage } from "http";
 import fs from "fs";
 import path from "path";
 import { Readable } from "node:stream";
+import { getUploadDir } from "@/lib/getUploadDir";
 
 // Important: disable Next.js default body parser so formidable can parse multipart/form-data
 export const config = {
@@ -16,7 +17,8 @@ export const config = {
 };
 
 // Ensure upload directory exists
-const uploadDir = path.join(process.cwd(), "public", "uploads");
+// const uploadDir = path.join(process.cwd(), "public", "uploads");
+const uploadDir = getUploadDir();
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 // Convert Next.js Request -> IncomingMessage for formidable
